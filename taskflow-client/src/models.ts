@@ -22,3 +22,10 @@ export type BoardDetails = {
   title: string;
   lists: TaskList[];
 };
+
+// Type for the reorder request
+export type ReorderCardRequest = {
+  cardId: number;
+  newTaskListId: number;
+  newCardOrder: number;
+};

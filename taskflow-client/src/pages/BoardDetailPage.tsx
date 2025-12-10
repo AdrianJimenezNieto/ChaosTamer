@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getBoardDetails, createTaskList } from "../services/boardService";
-import type { BoardDetails, TaskList, Card } from "../models";
+import { getBoardDetails, createTaskList, reorderCardsPersistence } from "../services/boardService";
+import type { BoardDetails, TaskList, Card, ReorderCardRequest } from "../models";
 import TaskColumn from "../components/board/TaskColumn";
 
 // --- IMPORTS DND-KIT ---
@@ -15,6 +15,7 @@ import {
 } from '@dnd-kit/core';
 import type { DragStartEvent, DragEndEvent, DragOverEvent } from "@dnd-kit/core";
 import SortableCard from '../components/board/SortableCard';
+import { arrayMove } from "@dnd-kit/sortable";
 // ----------------------
 
 
@@ -89,134 +90,108 @@ export default function BoardDetailPage() {
     const activeContainer = findContainer(activeId);
     const overContainer = findContainer(overId);
 
-    if (!activeContainer || !overContainer || activeContainer.id === overContainer.id) {
+    if (!activeContainer || !overContainer ) {
       return;
     }
 
     setBoard((prev) => {
-      if(!prev) return null;
+      if (!prev) return null;
 
-      // Obtain the clean arrays
       const activeItems = (activeContainer.cards || []).filter(c => c);
       const overItems = (overContainer.cards || []).filter(c => c);
 
-      // Index
+      const activeIndex = activeItems.findIndex((i) => i.id === activeId);
       const overIndex = overItems.findIndex((i) => i.id === overId);
 
-      let newIndex;
-      if (overItems.some(c  => c.id === overId)) {
-        newIndex = overIndex >= 0 ? overIndex + (active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height ? 1 : 0) : overItems.length;
-      } else {
-        newIndex = overItems.length;
-      }
+      let newIndex: any;
 
-      const newState = {
-        ...prev,
-        lists: prev.lists.map((l) => {
-          if (l.id === activeContainer.id) {
-            return { ...l, cards: activeItems.filter((item) => item.id !== activeId)}
-          }
-          if (l.id === overContainer.id) {
-            const newCards = [...overItems];
-            newCards.splice(newIndex, 0, activeCard as Card);
-            return { ...l, cards: newCards };
-          }
-          return l;
-        }),
-      };
-      return cleanBoardState(newState);
-    })
+      if (activeContainer.id === overContainer.id) {
+        // Reorder on the same list
+        if (activeIndex === overIndex) return prev; // No changes
+        
+        newIndex = overIndex;
+
+        const newState = {
+          ...prev,
+          lists: prev.lists.map(l => {
+              if (l.id === activeContainer.id) {
+                  return { ...l, cards: arrayMove(activeItems, activeIndex, newIndex) };
+              }
+              return l;
+          })
+        };
+        return cleanBoardState(newState);
+      } 
+      
+      // Move throught lists
+      else {
+        if (overItems.some(c => c.id === overId)) {
+          newIndex = overIndex >= 0 ? overIndex + (active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height ? 1 : 0) : overItems.length;
+        } else {
+          newIndex = overItems.length;
+        }
+
+        const newState = {
+          ...prev,
+          lists: prev.lists.map((l) => {
+            if (l.id === activeContainer.id) {
+              return { ...l, cards: activeItems.filter((item) => item.id !== activeId) };
+            }
+            if (l.id === overContainer.id) {
+              const newCardState = { ...activeCard, taskListId: overContainer.id };
+              const newCards = [...overItems];
+              newCards.splice(newIndex, 0, newCardState as Card);
+              return { ...l, cards: newCards };
+            }
+            return l;
+          }),
+        };
+        return cleanBoardState(newState);
+      }
+    });
   }
 
-  const handleDragEnd = (event: DragEndEvent) => {}
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { over } = event;
+    
+    // Clean the state
+    setActiveCard(null); 
 
-  // Al soltar (la lógica de reordenamiento interno)
-  // const handleDragEnd = (event: DragEndEvent) => {
-    // const { active, over } = event;
-    // setActiveCard(null); // Limpiar el overlay
+    // Do nothing if we dont drop
+    if (!over || !board) return;
 
-    // if (!over || !board) return;
+    // --- PERSISTENCE LOGIC ---
+    
+    const updates: ReorderCardRequest[] = [];
+    
+    // For each list of a board
+    board.lists.forEach((list) => {
+        // For each card of a list 
+        (list.cards || []).forEach((card, index) => { // Use the index as the order
+            if (card && card.id) {
+                updates.push({
+                    cardId: card.id,
+                    newTaskListId: list.id, 
+                    newCardOrder: index     
+                });
+            }
+        });
+    });
 
-    // const activeId = Number(active.id);
-    // const overId = Number(over.id);
-
-    // const activeContainer = findContainer(activeId);
-    // const overContainer = findContainer(overId);    
-
-    // if (!activeContainer || !overContainer) {
-    //   setActiveCard(null);
-    //   return;
-    // };
-
-    // // Obtain the clean arrays
-    // const activeItems = (activeContainer.cards || []).filter(c => c);
-    // const overItems = (overContainer.cards || []).filter(c => c);
-
-    // // Reorder on the same list
-    // if (activeContainer.id === overContainer.id) {
-      
-    //   const activeIndex = activeItems.findIndex((i) => i.id === activeId);
-    //   const overIndex = overItems.findIndex((i) => i.id === overId);
-
-    //   if (activeIndex !== overIndex) {
-    //     setBoard((prev) => {
-    //       if (!prev) return null;
-
-    //       const newLists = prev.lists.map((l) => {
-    //         if (l.id === activeContainer.id) {
-    //           // arrayMove handle the reorder of the items on the list
-    //           return { ...l, cards: arrayMove(activeItems, activeIndex, overIndex) };
-    //         }
-    //         return l;
-    //       });
-    //       return { ...prev, lists: newLists };
-    //     });
-    //     // TODO: Llamada a la API para persistir el orden (Fase 2)
-    //   }
-    // } else {
-    //   // Index of the list of the active card (old list)
-    //   const activeIndex = activeItems.findIndex((i) => i.id === activeId);
-
-    //   // If the card isnt on the array of the origin list (should not happen)
-    //   if (activeIndex === -1) {
-    //     setActiveCard(null);
-    //     return;
-    //   }
-
-    //   // Determinate the position of intersection: over a card (obtain index), if not to the end
-    //   const overIndex = overItems.findIndex((i) => i.id === over.id);
-    //   const newIndex = overIndex !== -1 ? overIndex : overItems.length;
-
-    //   setBoard((prev) => {
-    //     if (!prev) return null;
-
-    //     const newState = {
-    //       ...prev,
-    //       lists: prev.lists.map((l) => {
-    //         if (l.id === activeContainer.id) {
-    //           // Delete of the old list
-    //           return { ...l, cards: activeItems.filter((item) => item.id !== activeId)}
-    //         }
-    //         if (l.id === overContainer.id) {
-    //           // Insert it on the new list (using activeCard directly)
-    //           const newCardState = { ...activeCard, taskListId: overContainer.id};
-
-    //           const newCards = [...overItems];
-    //           newCards.splice(newIndex, 0, newCardState as Card);
-
-    //           return { ...l, cards: newCards };
-    //         }
-    //         return l;
-    //       }),
-    //     };
-
-    //     return cleanBoardState(newState);
-    //   });
-    //   // TODO: CALL THE API
-    // }
-
-  //   setActiveCard(null); // clean the state
-  // };
+    // Call the API if there is something to save
+    if (updates.length > 0) {
+        try {
+            // Send the full picture of the cards
+            console.log("💾 Guardando el nuevo orden...", updates);
+            await reorderCardsPersistence(updates); 
+            console.log("✅ Orden guardado correctamente.");
+        } catch (error) {
+            console.error("❌ Error al guardar el orden:", error);
+            // TODO: createa toast or something to log the errors to the user
+            setError("Error de conexión: No se guardó el último movimiento.");
+        }
+    }
+  };
   
   // -------------------
 
