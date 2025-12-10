@@ -18,7 +18,7 @@ export const createBoard = async (title: string): Promise<Board> => {
     const response = await api.post<Board>('/boards', { title });
     return response.data;
   } catch (error) {
-    console.log("Error creating board: ", error);
+    console.error("Error creating board: ", error);
     throw new Error("Fallo al crear el tablero.")
   }
 };

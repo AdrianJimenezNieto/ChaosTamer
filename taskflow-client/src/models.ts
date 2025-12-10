@@ -8,6 +8,7 @@ export type Card = {
   id: number;
   title: string;
   description: string | null;
+  cardOrder: number;
 };
 
 export type TaskList = {

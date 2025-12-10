@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,12 +33,20 @@ public class CardPersistenceAdapter implements CardRepositoryPort{
   }
 
   @Override
+  public List<Card> findAllByIds(Set<Long> cardsIds) {
+    return cardJpaRepository.findAllById(cardsIds)
+      .stream()
+      .map(cardMapper::toDomain)
+      .collect(Collectors.toList());
+  }
+
+  @Override
   public Card save(Card card) {
     // Map to entity
     CardEntity cardEntity = cardMapper.toEntity(card);
     // Get owner entity
     TaskListEntity taskListEntity = taskListJpaRepository.findById(card.getTaskListId())
-      .orElseThrow(() -> new EntityNotFoundException());
+    .orElseThrow(() -> new EntityNotFoundException());
     // Assign to the entity
     cardEntity.setTaskList(taskListEntity);
     // Persist on the db

@@ -18,10 +18,14 @@ public class CardEntity {
   @Column(name = "description")
   private String description;
 
+  // Order in the list
+  @Column(nullable = false)
+  private Integer cardOrder;
+
   // Relationships
   // Owned by a TaskList
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "task_list_id", nullable = false)
   private TaskListEntity taskList;
-
+  
 }

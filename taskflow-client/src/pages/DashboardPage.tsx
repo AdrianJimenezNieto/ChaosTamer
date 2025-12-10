@@ -59,7 +59,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="text-white">
+    <div className="text-white p-5">
       <h1 className="mb-6 text-3xl font-bold">Mis Tableros</h1>
 
       {/* Creation Form */}

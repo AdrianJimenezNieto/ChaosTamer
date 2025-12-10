@@ -14,6 +14,7 @@ public class CardPersistenceMapper {
       .title(entity.getTitle())
       .description(entity.getDescription())
       .taskListId(entity.getTaskList() != null ? entity.getTaskList().getId() : null)
+      .cardOrder(entity.getCardOrder())
       .build();
   }
 
@@ -23,6 +24,7 @@ public class CardPersistenceMapper {
     entity.setId(domain.getId());
     entity.setTitle(domain.getTitle());
     entity.setDescription(domain.getDescription());
+    entity.setCardOrder(domain.getCardOrder());
     // TaskList on adapter
     return entity;
   }

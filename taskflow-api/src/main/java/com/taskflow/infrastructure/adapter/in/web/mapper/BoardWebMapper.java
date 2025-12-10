@@ -72,6 +72,7 @@ public class BoardWebMapper {
       .id(card.getId())
       .title(card.getTitle())
       .description(card.getDescription())
+      .cardOrder(card.getCardOrder())
       .build();
   }
 

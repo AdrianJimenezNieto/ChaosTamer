@@ -15,5 +15,5 @@ public class Card {
   private String description;
   // reference to the parent task list
   private Long taskListId;
-  private Integer position; // drag-and-drop feature
+  private Integer cardOrder; // drag-and-drop feature
 }
