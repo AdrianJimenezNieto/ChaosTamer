@@ -10,4 +10,5 @@ public class CardResponse {
   private String title;
   private String description;
   private Integer cardOrder;
+  private Long taskListId;
 }

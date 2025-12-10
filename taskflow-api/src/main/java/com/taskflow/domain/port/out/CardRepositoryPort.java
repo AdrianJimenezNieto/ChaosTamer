@@ -2,6 +2,7 @@ package com.taskflow.domain.port.out;
 
 import com.taskflow.domain.model.Card;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface CardRepositoryPort {
@@ -12,4 +13,6 @@ public interface CardRepositoryPort {
   Card save(Card card);
 
   List<Card> findAllByIds(Set<Long> cardsIds);
+
+  Optional<Card> findById(Long id);
 }
