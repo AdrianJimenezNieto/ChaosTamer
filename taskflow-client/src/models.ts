@@ -35,3 +35,8 @@ export type UpdateCardRequest = {
   title?: string;
   description?: string;
 };
+
+// Type for updating tasklists
+export type UpdateTaskListId = {
+  title: string;
+}

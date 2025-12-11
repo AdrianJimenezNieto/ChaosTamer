@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard, deleteCard } from "../services/boardService";
+import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard, deleteCard, updateTaskList } from "../services/boardService";
 import type { BoardDetails, TaskList, Card, ReorderCardRequest } from "../models";
 import TaskColumn from "../components/board/TaskColumn";
 import { CardDetailModal } from "../components/board/CardDetailModal";
@@ -319,6 +319,32 @@ export default function BoardDetailPage() {
     setBoard(cleanBoardState(newState));
   }
 
+  // ------------------ UPDATE TASKLIST TITLE HANDLERS -----------------------
+  const handleUpdateListTitle = async (listId: number, newTitle: string) => {
+    if (!board) return;
+
+    const oldBoard = {...board}; // save a copy if it fails
+
+    setBoard(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        lists: prev.lists.map(list => 
+          list.id === listId ? { ...list, title: newTitle} : list
+        )
+      };
+    });
+
+    try {
+      // call the api
+      await updateTaskList(listId, { title: newTitle });
+    } catch (error) {
+      console.error("No se pudo actualizar el título: ", error);
+      // set the old board
+      setBoard(cleanBoardState(oldBoard));
+    }
+  }
+
   // Condicional rendering logic
   if (isLoading) {
     // TODO: build a loader
@@ -357,6 +383,7 @@ export default function BoardDetailPage() {
                 list={list}
                 onCardAdded={handleCardAdded}
                 handleCardClick={handleCardClick}
+                onUpdateTitle={handleUpdateListTitle}
               />
             ))
           ) : (
