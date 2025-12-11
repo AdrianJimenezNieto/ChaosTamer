@@ -29,3 +29,9 @@ export type ReorderCardRequest = {
   newTaskListId: number;
   newCardOrder: number;
 };
+
+// Type for updating the cards
+export type UpdateCardRequest = {
+  title?: string;
+  description?: string;
+};

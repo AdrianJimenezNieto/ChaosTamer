@@ -1,8 +1,9 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getBoardDetails, createTaskList, reorderCardsPersistence } from "../services/boardService";
+import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard } from "../services/boardService";
 import type { BoardDetails, TaskList, Card, ReorderCardRequest } from "../models";
 import TaskColumn from "../components/board/TaskColumn";
+import { CardDetailModal } from "../components/board/CardDetailModal";
 
 // --- IMPORTS DND-KIT ---
 import {
@@ -28,6 +29,8 @@ export default function BoardDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newListTitle, setNewListTitle] = useState('');
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Filter to change board state
   const cleanBoardState = (board: BoardDetails): BoardDetails => {
@@ -97,25 +100,26 @@ export default function BoardDetailPage() {
     setBoard((prev) => {
       if (!prev) return null;
 
+      const activeList = prev.lists.find(l => l.id === activeContainer.id);
+      const overList = prev.lists.find(l => l.id === overContainer.id);
+
+      if (!activeList || !overList) return prev;
+
       const activeItems = (activeContainer.cards || []).filter(c => c);
       const overItems = (overContainer.cards || []).filter(c => c);
 
       const activeIndex = activeItems.findIndex((i) => i.id === activeId);
       const overIndex = overItems.findIndex((i) => i.id === overId);
 
-      let newIndex: any;
-
       if (activeContainer.id === overContainer.id) {
         // Reorder on the same list
         if (activeIndex === overIndex) return prev; // No changes
         
-        newIndex = overIndex;
-
         const newState = {
           ...prev,
           lists: prev.lists.map(l => {
               if (l.id === activeContainer.id) {
-                  return { ...l, cards: arrayMove(activeItems, activeIndex, newIndex) };
+                  return { ...l, cards: arrayMove(activeItems, activeIndex, overIndex) };
               }
               return l;
           })
@@ -125,6 +129,11 @@ export default function BoardDetailPage() {
       
       // Move throught lists
       else {
+        // Verify is the card is already on the list
+        const isAlreadyInOverContainer = overList.cards.some(c => c.id === activeId);
+        if(isAlreadyInOverContainer) return prev;
+
+        let newIndex;
         if (overItems.some(c => c.id === overId)) {
           newIndex = overIndex >= 0 ? overIndex + (active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height ? 1 : 0) : overItems.length;
         } else {
@@ -261,6 +270,38 @@ export default function BoardDetailPage() {
     setBoard({ ...board, lists: updateLists})
   };
 
+  // MODAL HANDLERS
+  // Open modal
+  const handleCardClick = (card: Card) => {
+    setSelectedCard(card);
+    setIsModalOpen(true);
+  };
+
+  // Close modal
+  const handleCloseModal = () => {
+    setSelectedCard(null);
+    setIsModalOpen(false);
+  };
+
+  // Save changes (API + Local state)
+  const handleSaveCardDetails = async (cardId: number, newTitle: string, newDescription: string ) => {
+    if (!board) return;
+
+    // Call the API
+    const updatedCard = await updateCard(cardId, {title: newTitle, description: newDescription});
+    console.log("✅ Tarjeta actualizada correctamente.");
+    // Update the local state
+    const newState = {...board};
+    newState.lists = newState.lists.map(list => ({
+      ...list,
+      cards: list.cards.map(card =>
+        card.id === cardId ? updatedCard : card // replace the old card with the new one
+      )
+    }));
+
+    setBoard(cleanBoardState(newState));
+  };
+
   // Condicional rendering logic
   if (isLoading) {
     // TODO: build a loader
@@ -298,6 +339,7 @@ export default function BoardDetailPage() {
                 key={list.id}
                 list={list}
                 onCardAdded={handleCardAdded}
+                handleCardClick={handleCardClick}
               />
             ))
           ) : (
@@ -326,9 +368,15 @@ export default function BoardDetailPage() {
         {/* Overlay to show the card while its moving */}
         <DragOverlay>
           {activeCard ? (
-              <SortableCard card={activeCard} />
+              <SortableCard card={activeCard} onClick={() => handleCardClick(activeCard)}/>
             ) : null}
         </DragOverlay>
+        <CardDetailModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          card={selectedCard}
+          onSave={handleSaveCardDetails}
+        />
       </div>
     </DndContext>
   )

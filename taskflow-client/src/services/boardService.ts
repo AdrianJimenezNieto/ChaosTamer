@@ -1,5 +1,5 @@
 import api from '../lib/axios';
-import type { Board, BoardDetails, TaskList, Card, ReorderCardRequest } from '../models';
+import type { Board, BoardDetails, TaskList, Card, ReorderCardRequest, UpdateCardRequest } from '../models';
 
 // US-106: Bring all of my boards
 export const getMyBoards = async (): Promise<Board[]> => {
@@ -65,5 +65,17 @@ export const reorderCardsPersistence = async(updates: ReorderCardRequest[]): Pro
     api.put(`/tasklists/cards/reorder`, updates);
   } catch (error) {
     throw new Error("No se pudo persistir el nuevo orden de las tarjetas");
+  }
+};
+
+// US-206: Update Card Details
+export const updateCard = async(cardId: number, data: UpdateCardRequest): Promise<Card> => {
+  try {
+    // Call the API
+    const response = await api.patch<Card>(`/cards/${cardId}`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating card: ", error);
+    throw new Error("No se pudo actualizar la tarjeta.");
   }
 };

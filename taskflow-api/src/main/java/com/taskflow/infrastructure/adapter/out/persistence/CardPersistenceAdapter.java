@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,5 +54,11 @@ public class CardPersistenceAdapter implements CardRepositoryPort{
     CardEntity savedEntity = cardJpaRepository.save(cardEntity);
     // Remap and return
     return cardMapper.toDomain(savedEntity);
+  }
+
+  @Override
+  public Optional<Card> findById(Long id) {
+    return cardJpaRepository.findById(id)
+      .map(cardMapper::toDomain);
   }
 }

@@ -10,11 +10,14 @@ import com.taskflow.domain.port.in.GetBoardsByOwnerUseCase;
 import com.taskflow.domain.port.in.CreateTaskListUseCase;
 import com.taskflow.domain.port.in.CreateCardUseCase;
 import com.taskflow.domain.port.in.ReorderCardUseCase;
+import com.taskflow.domain.port.in.UpdateCardUseCase;
 import com.taskflow.domain.port.out.BoardRepositoryPort;
 import com.taskflow.domain.port.out.CardRepositoryPort;
 import com.taskflow.domain.port.out.TaskListRepositoryPort;
 import com.taskflow.domain.port.out.UserRepositoryPort;
 import com.taskflow.infrastructure.adapter.in.web.dto.ReorderCardRequest;
+import com.taskflow.infrastructure.adapter.in.web.dto.UpdateCardRequest;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +36,8 @@ import java.util.stream.Collectors;
 public class BoardService implements 
   CreateBoardUseCase, GetBoardsByOwnerUseCase,
   GetBoardDetailsUseCase, CreateTaskListUseCase,
-  CreateCardUseCase, ReorderCardUseCase {
+  CreateCardUseCase, ReorderCardUseCase,
+  UpdateCardUseCase {
   
   private final BoardRepositoryPort boardRepositoryPort;
   private final UserRepositoryPort userRepositoryPort;
@@ -260,5 +264,32 @@ public class BoardService implements
     if (!board.getUserId().equals(user.getId())) {
       throw new AccessDeniedException("No tienes permiso para crear esta tarjeta.");
     }
+  }
+
+  // US 203: Update the card info
+  @Override
+  @Transactional
+  public Card updateCard(Long cardId, UpdateCardRequest request, String username) {
+    Card card = cardRepositoryPort.findById(cardId)
+      .orElseThrow(() -> new EntityNotFoundException("Tarjeta no encontrada"));
+
+    // Security check with username
+    User user = userRepositoryPort.findByEmail(username)
+      .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+    // Verify permision
+    verifyUserByCard(user, card);
+
+    // Apply changes
+    if (request.getTitle() != null && !request.getTitle().isBlank()) {
+      card.setTitle(request.getTitle());
+    }
+
+    if (request.getDescription() != null && !request.getDescription().isBlank()) {
+      card.setDescription(request.getDescription());
+    }
+
+    // Save changes and return
+    return cardRepositoryPort.save(card);
   }
 }
