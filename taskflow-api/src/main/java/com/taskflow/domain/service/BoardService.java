@@ -13,6 +13,7 @@ import com.taskflow.domain.port.in.CreateCardUseCase;
 import com.taskflow.domain.port.in.ReorderCardUseCase;
 import com.taskflow.domain.port.in.UpdateCardUseCase;
 import com.taskflow.domain.port.in.DeleteCardUseCase;
+import com.taskflow.domain.port.in.UpdateTaskListUseCase;
 
 import com.taskflow.domain.port.out.BoardRepositoryPort;
 import com.taskflow.domain.port.out.CardRepositoryPort;
@@ -21,6 +22,7 @@ import com.taskflow.domain.port.out.UserRepositoryPort;
 
 import com.taskflow.infrastructure.adapter.in.web.dto.ReorderCardRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.UpdateCardRequest;
+import com.taskflow.infrastructure.adapter.in.web.dto.UpdateTaskListRequest;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -41,7 +43,8 @@ public class BoardService implements
   CreateBoardUseCase, GetBoardsByOwnerUseCase,
   GetBoardDetailsUseCase, CreateTaskListUseCase,
   CreateCardUseCase, ReorderCardUseCase,
-  UpdateCardUseCase, DeleteCardUseCase {
+  UpdateCardUseCase, DeleteCardUseCase,
+  UpdateTaskListUseCase {
   
   private final BoardRepositoryPort boardRepositoryPort;
   private final UserRepositoryPort userRepositoryPort;
@@ -328,5 +331,30 @@ public class BoardService implements
         cardRepositoryPort.save(card);
       }
     }
+  }
+
+  // US-205: Update tasklist
+  @Override
+  @Transactional
+  public TaskList updateTaskList(Long taskListId, UpdateTaskListRequest request, String username) {
+    // Get the tasklist
+    TaskList taskList = taskListRepositoryPort.findById(taskListId)
+      .orElseThrow(() -> new EntityNotFoundException("No se encontró la lista"));
+
+    // Security
+    Board board = boardRepositoryPort.findById(taskList.getBoardId())
+      .orElseThrow(() -> new EntityNotFoundException("Tablero no encontrado"));
+    User user = userRepositoryPort.findByEmail(username)
+      .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+    
+    if (!board.getUserId().equals(user.getId())) {
+      throw new AccessDeniedException("No tienes permiso para añadir listas a este tablero");
+    }
+
+    // Update
+    taskList.setTitle(request.getTitle());
+
+    // Persist changes and return
+    return taskListRepositoryPort.save(taskList);
   }
 }

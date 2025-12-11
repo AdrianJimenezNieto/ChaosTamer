@@ -1,5 +1,5 @@
 import api from '../lib/axios';
-import type { Board, BoardDetails, TaskList, Card, ReorderCardRequest, UpdateCardRequest } from '../models';
+import type { Board, BoardDetails, TaskList, Card, ReorderCardRequest, UpdateCardRequest, UpdateTaskListId } from '../models';
 
 // US-106: Bring all of my boards
 export const getMyBoards = async (): Promise<Board[]> => {
@@ -88,5 +88,18 @@ export const deleteCard = async(cardId: number): Promise<void> => {
   } catch (error) {
     console.error("Error al eliminar la tarjeta: ", error);
     throw new Error("No se pudo eliminar la tarjeta");
+  }
+}
+
+// US-205: Update tasklist title
+export const updateTaskList = async(taskListId: number, data: UpdateTaskListId): Promise<TaskList> => {
+  try {
+    // Call the api
+    const response = await api.patch<TaskList>(`/tasklists/${taskListId}`, data);
+    console.log("✅ Título de la lista actualizado correctamente")
+    return response.data;
+  } catch (error) {
+    console.error("No se pudo editar el título de la lista", error);
+    throw new Error("No se pudo editar el título de la lista")
   }
 }
