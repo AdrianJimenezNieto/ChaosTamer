@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard } from "../services/boardService";
+import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard, deleteCard } from "../services/boardService";
 import type { BoardDetails, TaskList, Card, ReorderCardRequest } from "../models";
 import TaskColumn from "../components/board/TaskColumn";
 import { CardDetailModal } from "../components/board/CardDetailModal";
@@ -302,6 +302,23 @@ export default function BoardDetailPage() {
     setBoard(cleanBoardState(newState));
   };
 
+  // Delete function
+  const handleDeleteCard = async (cardId: number) => {
+    if(!board) return;
+
+    // Call the API
+    await deleteCard(cardId);
+
+    // Update the state
+    const newState = {...board};
+    newState.lists = newState.lists.map(list => ({
+      ...list,
+      cards: list.cards.filter(c => c.id !== cardId)
+    }));
+    
+    setBoard(cleanBoardState(newState));
+  }
+
   // Condicional rendering logic
   if (isLoading) {
     // TODO: build a loader
@@ -376,6 +393,7 @@ export default function BoardDetailPage() {
           onClose={handleCloseModal}
           card={selectedCard}
           onSave={handleSaveCardDetails}
+          onDelete={handleDeleteCard}
         />
       </div>
     </DndContext>
