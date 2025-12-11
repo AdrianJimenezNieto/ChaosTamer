@@ -61,4 +61,9 @@ public class CardPersistenceAdapter implements CardRepositoryPort{
     return cardJpaRepository.findById(id)
       .map(cardMapper::toDomain);
   }
+
+  @Override
+  public void deleteById(Long id) {
+    cardJpaRepository.deleteById(id);
+  }
 }

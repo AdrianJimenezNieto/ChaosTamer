@@ -4,6 +4,7 @@ import com.taskflow.domain.model.Board;
 import com.taskflow.domain.model.User;
 import com.taskflow.domain.model.Card;
 import com.taskflow.domain.model.TaskList;
+
 import com.taskflow.domain.port.in.CreateBoardUseCase;
 import com.taskflow.domain.port.in.GetBoardDetailsUseCase;
 import com.taskflow.domain.port.in.GetBoardsByOwnerUseCase;
@@ -11,10 +12,13 @@ import com.taskflow.domain.port.in.CreateTaskListUseCase;
 import com.taskflow.domain.port.in.CreateCardUseCase;
 import com.taskflow.domain.port.in.ReorderCardUseCase;
 import com.taskflow.domain.port.in.UpdateCardUseCase;
+import com.taskflow.domain.port.in.DeleteCardUseCase;
+
 import com.taskflow.domain.port.out.BoardRepositoryPort;
 import com.taskflow.domain.port.out.CardRepositoryPort;
 import com.taskflow.domain.port.out.TaskListRepositoryPort;
 import com.taskflow.domain.port.out.UserRepositoryPort;
+
 import com.taskflow.infrastructure.adapter.in.web.dto.ReorderCardRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.UpdateCardRequest;
 
@@ -37,7 +41,7 @@ public class BoardService implements
   CreateBoardUseCase, GetBoardsByOwnerUseCase,
   GetBoardDetailsUseCase, CreateTaskListUseCase,
   CreateCardUseCase, ReorderCardUseCase,
-  UpdateCardUseCase {
+  UpdateCardUseCase, DeleteCardUseCase {
   
   private final BoardRepositoryPort boardRepositoryPort;
   private final UserRepositoryPort userRepositoryPort;
@@ -204,7 +208,7 @@ public class BoardService implements
       }
       reindexList(cardsToUpdate, movedCards);
     }
-  } 
+  }
 
   private void reindexList(List<Card> cards, Set<Long> movedCardIds) {
     // Controller of the comparator
@@ -291,5 +295,38 @@ public class BoardService implements
 
     // Save changes and return
     return cardRepositoryPort.save(card);
+  }
+
+  // US-209: Delete a card by id
+  @Override
+  @Transactional
+  public void deleteCard(Long cardId, String username) {
+    // Get the card
+    Card cardToDelete = cardRepositoryPort.findById(cardId)
+      .orElseThrow(() -> new EntityNotFoundException("No se ha encontrado la tarjeta"));
+      
+    // Security
+    User user = userRepositoryPort.findByEmail(username)
+    .orElseThrow(() -> new EntityNotFoundException("No se ha encontrado el usuario"));
+    verifyUserByCard(user, cardToDelete);
+
+    // Save the ID of list to reorder after this
+    Long taskListId = cardToDelete.getTaskListId();
+
+    // DELETE THE CARD
+    cardRepositoryPort.deleteById(cardId);
+
+    // Reindex 
+    List<Card> remainingCards = cardRepositoryPort.findAllByTaskListId(taskListId);
+    remainingCards.sort(Comparator.comparing(Card::getCardOrder));
+
+    for (int i = 0; i < remainingCards.size(); i++) {
+      Card card = remainingCards.get(i);
+
+      if (!card.getCardOrder().equals(i)){
+        card.setCardOrder(i);
+        cardRepositoryPort.save(card);
+      }
+    }
   }
 }

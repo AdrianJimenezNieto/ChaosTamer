@@ -79,3 +79,14 @@ export const updateCard = async(cardId: number, data: UpdateCardRequest): Promis
     throw new Error("No se pudo actualizar la tarjeta.");
   }
 };
+
+// US-209: Delete a card
+export const deleteCard = async(cardId: number): Promise<void> => {
+  try{
+    api.delete(`/cards/${cardId}`);
+    console.log("🗑️ Tarjeta eliminada correctamente.");
+  } catch (error) {
+    console.error("Error al eliminar la tarjeta: ", error);
+    throw new Error("No se pudo eliminar la tarjeta");
+  }
+}
