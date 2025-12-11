@@ -15,4 +15,7 @@ public interface CardRepositoryPort {
   List<Card> findAllByIds(Set<Long> cardsIds);
 
   Optional<Card> findById(Long id);
+
+  // US-209: Delete a card
+  void deleteById(Long id);
 }

@@ -1,7 +1,10 @@
 package com.taskflow.infrastructure.adapter.in.web;
 
 import com.taskflow.domain.model.Card;
+
 import com.taskflow.domain.port.in.UpdateCardUseCase;
+import com.taskflow.domain.port.in.DeleteCardUseCase;
+
 import com.taskflow.infrastructure.adapter.in.web.dto.CardResponse;
 import com.taskflow.infrastructure.adapter.in.web.dto.UpdateCardRequest;
 import com.taskflow.infrastructure.adapter.in.web.mapper.CardWebMapper;
@@ -20,6 +23,7 @@ public class CardController {
     
     // Dependecies inyection
     private final UpdateCardUseCase updateCardUseCase;
+    private final DeleteCardUseCase deleteCardUseCase;
     private final CardWebMapper cardWebMapper;
 
     @PatchMapping("/{cardId}")
@@ -36,5 +40,16 @@ public class CardController {
 
         // Return a 200 OK with the new data
         return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{cardId}")
+    public ResponseEntity<Void> deleteCard(
+        @PathVariable Long cardId,
+        @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        deleteCardUseCase.deleteCard(cardId, userDetails.getUsername());
+
+        // Return a 204 No Content
+        return ResponseEntity.noContent().build();
     }
 }
