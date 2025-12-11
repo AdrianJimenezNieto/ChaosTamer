@@ -10,9 +10,10 @@ interface TaskColumnProps {
   list: TaskList;
   // this property will advice the father when we create a new card
   onCardAdded: (listId: number, newCard: Card) => void;
+  handleCardClick: (card: Card) => void;
 }
 
-export default function TaskColumn({ list, onCardAdded}: TaskColumnProps) {
+export default function TaskColumn({ list, onCardAdded, handleCardClick }: TaskColumnProps) {
   const [newCardTitle, setNewCardTitle] = useState('');
 
   const cardIds = (list.cards || [])
@@ -55,7 +56,7 @@ export default function TaskColumn({ list, onCardAdded}: TaskColumnProps) {
           >
             {list.cards && list.cards.length > 0 ? (
               list.cards.map((card) => (
-                card ? <SortableCard key={card.id} card={card}/> : null
+                card ? <SortableCard key={card.id} card={card} onClick={() => handleCardClick(card)}/> : null
               ))
             ) : (
               <p className='text-sm text-gray-400'>No hay tarjetas.</p>

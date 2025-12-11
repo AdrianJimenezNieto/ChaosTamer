@@ -22,7 +22,7 @@ public class CardController {
     private final UpdateCardUseCase updateCardUseCase;
     private final CardWebMapper cardWebMapper;
 
-    @PutMapping("/{cardId}")
+    @PatchMapping("/{cardId}")
     public ResponseEntity<CardResponse> updateCard (
         @PathVariable Long cardId,
         @Valid @RequestBody UpdateCardRequest request,

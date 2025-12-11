@@ -52,7 +52,7 @@ public class SecurityConfig {
       "http://localhost:5173",
       frontendUrl
       ));
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
 
     // Allow credentials
