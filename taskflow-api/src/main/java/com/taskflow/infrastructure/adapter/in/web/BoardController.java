@@ -2,16 +2,22 @@ package com.taskflow.infrastructure.adapter.in.web;
 
 import com.taskflow.domain.model.Board;
 import com.taskflow.domain.model.TaskList;
+
 import com.taskflow.domain.port.in.CreateBoardUseCase;
 import com.taskflow.domain.port.in.CreateTaskListUseCase;
 import com.taskflow.domain.port.in.GetBoardsByOwnerUseCase;
 import com.taskflow.domain.port.in.GetBoardDetailsUseCase;
+import com.taskflow.domain.port.in.UpdateBoardUseCase;
+
 import com.taskflow.infrastructure.adapter.in.web.dto.BoardResponse;
 import com.taskflow.infrastructure.adapter.in.web.dto.CreateBoardRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.BoardDetailResponse;
 import com.taskflow.infrastructure.adapter.in.web.dto.CreateTaskListRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.TaskListResponse;
+import com.taskflow.infrastructure.adapter.in.web.dto.UpdateBoardRequest;
+
 import com.taskflow.infrastructure.adapter.in.web.mapper.BoardWebMapper;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,6 +37,7 @@ public class BoardController {
   private final GetBoardsByOwnerUseCase getBoardsByOwnerUseCase;
   private final GetBoardDetailsUseCase getBoardDetailsUseCase;
   private final CreateTaskListUseCase createTaskListUseCase;
+  private final UpdateBoardUseCase updateBoardUseCase;
   private final BoardWebMapper boardWebMapper;
 
   // US-105: Create a board
@@ -88,5 +95,19 @@ public class BoardController {
 
     // Map the domain result into response DTO 
     return new ResponseEntity<>(boardWebMapper.toTaskListResponse(newTaskList), HttpStatus.CREATED);
+  }
+
+  // US-204: Update a board
+  @PatchMapping("/{boardId}")
+  public ResponseEntity<BoardResponse> updateBoard(
+    @PathVariable Long boardId,
+    @Valid @RequestBody UpdateBoardRequest request, 
+    @AuthenticationPrincipal UserDetails userDetails
+  ) {
+    // Call the service
+    Board updateBoard = updateBoardUseCase.updateBoard(boardId, request, userDetails.getUsername());
+
+    // Map the result and return a 200 OK
+    return ResponseEntity.ok(boardWebMapper.toResponse(updateBoard));
   }
 }

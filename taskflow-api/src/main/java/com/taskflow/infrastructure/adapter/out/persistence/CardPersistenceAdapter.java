@@ -43,13 +43,21 @@ public class CardPersistenceAdapter implements CardRepositoryPort{
 
   @Override
   public Card save(Card card) {
-    // Map to entity
-    CardEntity cardEntity = cardMapper.toEntity(card);
-    // Get owner entity
-    TaskListEntity taskListEntity = taskListJpaRepository.findById(card.getTaskListId())
-    .orElseThrow(() -> new EntityNotFoundException());
-    // Assign to the entity
-    cardEntity.setTaskList(taskListEntity);
+    CardEntity cardEntity;
+
+    if (card.getId() != null) {
+      cardEntity = cardJpaRepository.findById(card.getId())
+        .orElseThrow(() -> new EntityNotFoundException("Tarjeta no encontrada"));
+      cardEntity.setTitle(card.getTitle());
+      cardEntity.setDescription(card.getDescription());
+      cardEntity.setCardOrder(card.getCardOrder());
+    } else {
+      cardEntity = cardMapper.toEntity(card);
+      TaskListEntity taskListEntity = taskListJpaRepository.findById(card.getTaskListId())
+        .orElseThrow(() -> new EntityNotFoundException());
+      // Assign to the entity
+      cardEntity.setTaskList(taskListEntity);
+    }
     // Persist on the db
     CardEntity savedEntity = cardJpaRepository.save(cardEntity);
     // Remap and return

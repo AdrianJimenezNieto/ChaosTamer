@@ -33,16 +33,26 @@ public class TaskListPersistenceAdapter implements TaskListRepositoryPort {
 
   @Override
   public TaskList save(TaskList taskList) {
-    // Map the entity
-    TaskListEntity taskListEntity = taskListMapper.toEntity(taskList);
-    // Find the owner
-    BoardEntity boadEntity = boardJpaRepository.findById(taskList.getBoardId())
-      .orElseThrow(() -> new EntityNotFoundException());
-    // Assing the board
-    taskListEntity.setBoard(boadEntity);
-    // Save with the jpa
+    TaskListEntity taskListEntity;
+
+    // UPDATE CASE
+    if (taskList.getId() != null) {
+      taskListEntity = taskListJpaRepository.findById(taskList.getId())
+        .orElseThrow(() -> new EntityNotFoundException("Lista no encontrada"));
+      
+      // Update the list title
+      taskListEntity.setTitle(taskList.getTitle());
+    } else {
+      taskListEntity = taskListMapper.toEntity(taskList);
+
+      // Owner assignment
+      BoardEntity boardEntity = boardJpaRepository.findById(taskList.getBoardId())
+        .orElseThrow(() -> new EntityNotFoundException("Tablero no encontrado"));
+      taskListEntity.setBoard(boardEntity);
+    }
+    
+    // Save
     TaskListEntity savedEntity = taskListJpaRepository.save(taskListEntity);
-    // Remap and return
     return taskListMapper.toDomain(savedEntity);
   }
 

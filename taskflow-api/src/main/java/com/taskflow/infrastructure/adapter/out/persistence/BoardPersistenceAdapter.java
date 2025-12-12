@@ -25,10 +25,19 @@ public class BoardPersistenceAdapter implements BoardRepositoryPort {
 
   @Override 
   public Board save(Board board) {
-    BoardEntity boardEntity = boardMapper.toEntity(board);
-    UserEntity owner = userJpaRepository.findById(board.getUserId())
-                                        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + board.getUserId()));
-    boardEntity.setOwner(owner);
+    BoardEntity boardEntity;
+    if (board.getId() != null) {
+      boardEntity = boardJpaRepository.findById(board.getId())
+        .orElseThrow(() -> new EntityNotFoundException("No se ha encontrado el tablero"));
+
+      boardEntity.setTitle(board.getTitle());
+    }
+    else {
+      boardEntity = boardMapper.toEntity(board);
+      UserEntity owner = userJpaRepository.findById(board.getUserId())
+        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + board.getUserId()));
+      boardEntity.setOwner(owner);
+    }
     BoardEntity savedEntity = boardJpaRepository.save(boardEntity); // Persist on the database
 
     return boardMapper.toDomain(savedEntity);

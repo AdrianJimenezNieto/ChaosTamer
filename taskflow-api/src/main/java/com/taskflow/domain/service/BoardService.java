@@ -15,6 +15,7 @@ import com.taskflow.domain.port.in.UpdateCardUseCase;
 import com.taskflow.domain.port.in.DeleteCardUseCase;
 import com.taskflow.domain.port.in.UpdateTaskListUseCase;
 import com.taskflow.domain.port.in.DeleteTaskListUseCase;
+import com.taskflow.domain.port.in.UpdateBoardUseCase;
 
 import com.taskflow.domain.port.out.BoardRepositoryPort;
 import com.taskflow.domain.port.out.CardRepositoryPort;
@@ -22,6 +23,7 @@ import com.taskflow.domain.port.out.TaskListRepositoryPort;
 import com.taskflow.domain.port.out.UserRepositoryPort;
 
 import com.taskflow.infrastructure.adapter.in.web.dto.ReorderCardRequest;
+import com.taskflow.infrastructure.adapter.in.web.dto.UpdateBoardRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.UpdateCardRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.UpdateTaskListRequest;
 
@@ -45,7 +47,8 @@ public class BoardService implements
   GetBoardDetailsUseCase, CreateTaskListUseCase,
   CreateCardUseCase, ReorderCardUseCase,
   UpdateCardUseCase, DeleteCardUseCase,
-  UpdateTaskListUseCase, DeleteTaskListUseCase {
+  UpdateTaskListUseCase, DeleteTaskListUseCase,
+  UpdateBoardUseCase {
   
   private final BoardRepositoryPort boardRepositoryPort;
   private final UserRepositoryPort userRepositoryPort;
@@ -280,7 +283,6 @@ public class BoardService implements
   public Card updateCard(Long cardId, UpdateCardRequest request, String username) {
     Card card = cardRepositoryPort.findById(cardId)
       .orElseThrow(() -> new EntityNotFoundException("Tarjeta no encontrada"));
-
     // Security check with username
     User user = userRepositoryPort.findByEmail(username)
       .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
@@ -360,6 +362,8 @@ public class BoardService implements
   }
 
   // US-208: Delete TaskList
+  @Override
+  @Transactional
   public void deleteTaskList(Long taskListId, String username) {
     // Get the list to veify security
     TaskList taskList = taskListRepositoryPort.findById(taskListId)
@@ -377,5 +381,29 @@ public class BoardService implements
 
     // Delete 
     taskListRepositoryPort.deleteById(taskListId);
+  }
+
+  // US-204: Update the title of a board
+  @Override
+  @Transactional
+  public Board updateBoard(Long boardId, UpdateBoardRequest request, String username) {
+    // Get the board
+    Board boardToUpdate = boardRepositoryPort.findById(boardId)
+      .orElseThrow(() -> new EntityNotFoundException("No se ha encontrado el tablero"));
+
+      
+    // SECURITY
+    User user = userRepositoryPort.findByEmail(username)
+    .orElseThrow(() -> new EntityNotFoundException("No se ha encontrado el usuario"));
+
+    if (!boardToUpdate.getUserId().equals(user.getId())) {
+      throw new AccessDeniedException("No tienes permisos para editar este tablero");
+    }
+
+    // Update the board
+    boardToUpdate.setTitle(request.getTitle());
+
+    // Save changes and return
+    return boardRepositoryPort.save(boardToUpdate);
   }
 }
