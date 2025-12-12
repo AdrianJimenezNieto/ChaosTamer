@@ -51,6 +51,9 @@ public class CardPersistenceAdapter implements CardRepositoryPort{
       cardEntity.setTitle(card.getTitle());
       cardEntity.setDescription(card.getDescription());
       cardEntity.setCardOrder(card.getCardOrder());
+      TaskListEntity taskListEntity = taskListJpaRepository.findById(card.getTaskListId())
+        .orElseThrow(() -> new EntityNotFoundException());
+      cardEntity.setTaskList(taskListEntity);
     } else {
       cardEntity = cardMapper.toEntity(card);
       TaskListEntity taskListEntity = taskListJpaRepository.findById(card.getTaskListId())

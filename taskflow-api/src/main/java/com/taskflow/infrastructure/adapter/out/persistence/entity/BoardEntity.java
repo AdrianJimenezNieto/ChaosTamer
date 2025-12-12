@@ -24,5 +24,6 @@ public class BoardEntity {
 
   // Owns a TaskList
   @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("id ASC")
   private List<TaskListEntity> taskLists;
 }
