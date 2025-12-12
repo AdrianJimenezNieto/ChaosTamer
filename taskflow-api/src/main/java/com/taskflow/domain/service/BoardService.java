@@ -14,6 +14,7 @@ import com.taskflow.domain.port.in.ReorderCardUseCase;
 import com.taskflow.domain.port.in.UpdateCardUseCase;
 import com.taskflow.domain.port.in.DeleteCardUseCase;
 import com.taskflow.domain.port.in.UpdateTaskListUseCase;
+import com.taskflow.domain.port.in.DeleteTaskListUseCase;
 
 import com.taskflow.domain.port.out.BoardRepositoryPort;
 import com.taskflow.domain.port.out.CardRepositoryPort;
@@ -44,7 +45,7 @@ public class BoardService implements
   GetBoardDetailsUseCase, CreateTaskListUseCase,
   CreateCardUseCase, ReorderCardUseCase,
   UpdateCardUseCase, DeleteCardUseCase,
-  UpdateTaskListUseCase {
+  UpdateTaskListUseCase, DeleteTaskListUseCase {
   
   private final BoardRepositoryPort boardRepositoryPort;
   private final UserRepositoryPort userRepositoryPort;
@@ -356,5 +357,25 @@ public class BoardService implements
 
     // Persist changes and return
     return taskListRepositoryPort.save(taskList);
+  }
+
+  // US-208: Delete TaskList
+  public void deleteTaskList(Long taskListId, String username) {
+    // Get the list to veify security
+    TaskList taskList = taskListRepositoryPort.findById(taskListId)
+      .orElseThrow(() -> new EntityNotFoundException("Lista no encontrada"));
+    Board board = boardRepositoryPort.findById(taskList.getBoardId())
+      .orElseThrow(() -> new EntityNotFoundException("Tablero no encontrado"));
+
+    User user = userRepositoryPort.findByEmail(username)
+      .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+    // Verify that the user is the owner of the list
+    if (!board.getUserId().equals(user.getId())) {
+      throw new AccessDeniedException("No tienes permiso para eliminar esta lista");
+    }
+
+    // Delete 
+    taskListRepositoryPort.deleteById(taskListId);
   }
 }

@@ -6,7 +6,7 @@ import com.taskflow.domain.model.TaskList;
 import com.taskflow.domain.port.in.CreateCardUseCase;
 import com.taskflow.domain.port.in.ReorderCardUseCase;
 import com.taskflow.domain.port.in.UpdateTaskListUseCase;
-
+import com.taskflow.domain.port.in.DeleteTaskListUseCase;
 import com.taskflow.infrastructure.adapter.in.web.dto.CardResponse;
 import com.taskflow.infrastructure.adapter.in.web.dto.CreateCardRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.ReorderCardRequest;
@@ -36,6 +36,7 @@ public class TaskListController {
   private final CreateCardUseCase createCardUseCase;
   private final ReorderCardUseCase reorderCardsUseCase;
   private final UpdateTaskListUseCase updateTaskListUseCase;
+  private final DeleteTaskListUseCase deleteTaskListUseCase;
   private final BoardWebMapper boardWebMapper;
 
   // US - 203: Create new card in a tasklist
@@ -77,5 +78,16 @@ public class TaskListController {
     TaskList updatedList = updateTaskListUseCase.updateTaskList(taskListId, request, userDetails.getUsername());
 
     return ResponseEntity.ok(boardWebMapper.toTaskListResponse(updatedList));
+  }
+
+  // US-208: Delete a tasklist
+  @DeleteMapping("/{taskListId}")
+  public ResponseEntity<Void> deleteTaskList(
+    @PathVariable Long taskListId,
+    @AuthenticationPrincipal UserDetails userDetails
+  ) {
+    deleteTaskListUseCase.deleteTaskList(taskListId, userDetails.getUsername());
+
+    return ResponseEntity.noContent().build();
   }
 }

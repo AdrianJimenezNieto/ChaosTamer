@@ -83,7 +83,7 @@ export const updateCard = async(cardId: number, data: UpdateCardRequest): Promis
 // US-209: Delete a card
 export const deleteCard = async(cardId: number): Promise<void> => {
   try{
-    api.delete(`/cards/${cardId}`);
+    await api.delete(`/cards/${cardId}`);
     console.log("🗑️ Tarjeta eliminada correctamente.");
   } catch (error) {
     console.error("Error al eliminar la tarjeta: ", error);
@@ -101,5 +101,17 @@ export const updateTaskList = async(taskListId: number, data: UpdateTaskListId):
   } catch (error) {
     console.error("No se pudo editar el título de la lista", error);
     throw new Error("No se pudo editar el título de la lista")
+  }
+}
+
+// US-208: Delete TaskList
+export const deleteTaskList = async(taskListId: number): Promise<void> => {
+  try {
+    // Call the endpoint for deleting a TaskList
+    await api.delete(`/tasklists/${taskListId}`);
+    console.log("🗑️ Lista borrada correctamente.")
+  } catch (error) {
+    console.error("No se pudo eliminar la lista: ", error);
+    throw new Error("No se ha podido eliminar la lista")
   }
 }

@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard, deleteCard, updateTaskList } from "../services/boardService";
+import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard, deleteCard, updateTaskList, deleteTaskList } from "../services/boardService";
 import type { BoardDetails, TaskList, Card, ReorderCardRequest } from "../models";
 import TaskColumn from "../components/board/TaskColumn";
 import { CardDetailModal } from "../components/board/CardDetailModal";
@@ -345,6 +345,32 @@ export default function BoardDetailPage() {
     }
   }
 
+  // ------------------------ DELETE TASKLIST HANDLERS ----------------------
+  const handleDeleteList = async (listId: number) => {
+    if (!board) return;
+
+    // Save the prev board
+    const oldBoard = {...board};
+
+    // Optimistic update
+    setBoard(prev => {
+      if(!prev) return null;
+      return {
+        ...prev,
+        lists: prev.lists.filter(l => l.id !== listId)  // Filter the list
+      }
+    })
+
+    try {
+      // Call the service
+      await deleteTaskList(listId);
+    } catch (error) {
+      console.error("Error al eliminar la lista: ", error);
+      setBoard(cleanBoardState(oldBoard));
+      throw new Error("Hubo un error al eliminar la lista")
+    }
+  };
+
   // Condicional rendering logic
   if (isLoading) {
     // TODO: build a loader
@@ -384,6 +410,7 @@ export default function BoardDetailPage() {
                 onCardAdded={handleCardAdded}
                 handleCardClick={handleCardClick}
                 onUpdateTitle={handleUpdateListTitle}
+                onDeleteList={handleDeleteList}
               />
             ))
           ) : (

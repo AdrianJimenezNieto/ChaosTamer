@@ -11,4 +11,6 @@ public interface TaskListRepositoryPort {
   TaskList save(TaskList taskList);
 
   Optional<TaskList> findById(Long taskListId);
+
+  void deleteById(Long id);
 }
