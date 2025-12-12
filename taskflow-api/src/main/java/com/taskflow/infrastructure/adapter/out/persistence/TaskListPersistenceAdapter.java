@@ -51,4 +51,9 @@ public class TaskListPersistenceAdapter implements TaskListRepositoryPort {
     return taskListJpaRepository.findById(taskListId)
       .map(taskListMapper::toDomain);
   }
+
+  @Override
+  public void deleteById(Long id) {
+    taskListJpaRepository.deleteById(id);
+  }
 }
