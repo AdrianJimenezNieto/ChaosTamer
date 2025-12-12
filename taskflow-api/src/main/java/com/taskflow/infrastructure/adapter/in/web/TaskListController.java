@@ -5,13 +5,16 @@ import com.taskflow.domain.model.TaskList;
 
 import com.taskflow.domain.port.in.CreateCardUseCase;
 import com.taskflow.domain.port.in.ReorderCardUseCase;
+import com.taskflow.domain.port.in.ReorderTaskListUseCase;
 import com.taskflow.domain.port.in.UpdateTaskListUseCase;
 import com.taskflow.domain.port.in.DeleteTaskListUseCase;
+
 import com.taskflow.infrastructure.adapter.in.web.dto.CardResponse;
 import com.taskflow.infrastructure.adapter.in.web.dto.CreateCardRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.ReorderCardRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.UpdateTaskListRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.TaskListResponse;
+import com.taskflow.infrastructure.adapter.in.web.dto.ReorderTaskListRequest;
 
 import com.taskflow.infrastructure.adapter.in.web.mapper.CardWebMapper;
 import com.taskflow.infrastructure.adapter.in.web.mapper.TaskListWebMapper;
@@ -38,6 +41,7 @@ public class TaskListController {
   private final ReorderCardUseCase reorderCardsUseCase;
   private final UpdateTaskListUseCase updateTaskListUseCase;
   private final DeleteTaskListUseCase deleteTaskListUseCase;
+  private final ReorderTaskListUseCase reorderTaskListUseCase;
 
   private final TaskListWebMapper taskListWebMapper;
   private final CardWebMapper cardWebMapper;
@@ -91,6 +95,16 @@ public class TaskListController {
   ) {
     deleteTaskListUseCase.deleteTaskList(taskListId, userDetails.getUsername());
 
+    return ResponseEntity.noContent().build();
+  }
+
+  // Reorder lists in a board
+  @PutMapping("/reorder")
+  public ResponseEntity<Void> reorderLists(
+    @RequestBody List<ReorderTaskListRequest> requests,
+    @AuthenticationPrincipal UserDetails userDetails
+  ) {
+    reorderTaskListUseCase.reorderTaskLists(requests, userDetails.getUsername());
     return ResponseEntity.noContent().build();
   }
 }

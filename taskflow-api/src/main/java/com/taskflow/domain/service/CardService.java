@@ -95,35 +95,35 @@ public class CardService implements
         .collect(Collectors.toSet());
 
         for (Long listId : affectedListIds) {
-        // Get all the cards in the list 
-        List<Card> currentListCards = cardRepositoryPort.findAllByTaskListId(listId);
+            // Get all the cards in the list 
+            List<Card> currentListCards = cardRepositoryPort.findAllByTaskListId(listId);
 
-        // Get the updates for card desined for this list
-        List<ReorderCardRequest> listUpdates = updates.stream()
-            .filter(u -> u.getNewTaskListId().equals(listId))
-            .collect(Collectors.toList());
+            // Get the updates for card desined for this list
+            List<ReorderCardRequest> listUpdates = updates.stream()
+                .filter(u -> u.getNewTaskListId().equals(listId))
+                .collect(Collectors.toList());
 
-        Set<Long> allCardIdsInList = new java.util.HashSet<>(currentListCards.stream().map(Card::getId).collect(Collectors.toSet()));
-        listUpdates.forEach(u -> allCardIdsInList.add(u.getCardId()));
+            Set<Long> allCardIdsInList = new java.util.HashSet<>(currentListCards.stream().map(Card::getId).collect(Collectors.toSet()));
+            listUpdates.forEach(u -> allCardIdsInList.add(u.getCardId()));
 
-        List<Card> cardsToUpdate = cardRepositoryPort.findAllByIds(allCardIdsInList);
+            List<Card> cardsToUpdate = cardRepositoryPort.findAllByIds(allCardIdsInList);
 
-        // Apply the changes
-        for (Card card : cardsToUpdate) {
+            // Apply the changes
+            for (Card card : cardsToUpdate) {
 
-            verifyUserByCard(user, card);
-            
-            ReorderCardRequest update = listUpdates.stream()
-            .filter(u -> u.getCardId().equals(card.getId()))
-            .findFirst()
-            .orElse(null);
+                verifyUserByCard(user, card);
+                
+                ReorderCardRequest update = listUpdates.stream()
+                .filter(u -> u.getCardId().equals(card.getId()))
+                .findFirst()
+                .orElse(null);
 
-            if (update != null) {
-            card.setTaskListId(update.getNewTaskListId());
-            card.setCardOrder(update.getNewCardOrder());
+                if (update != null) {
+                    card.setTaskListId(update.getNewTaskListId());
+                    card.setCardOrder(update.getNewCardOrder());
+                }
             }
-        }
-        reindexList(cardsToUpdate, movedCards);
+            reindexList(cardsToUpdate, movedCards);
         }
     }
 
@@ -166,12 +166,12 @@ public class CardService implements
         cards.sort(comparator);
 
         for (int i = 0; i < cards.size(); i++) {
-        Card card = cards.get(i);
+            Card card = cards.get(i);
 
-        if (!card.getCardOrder().equals(i)) {
-            card.setCardOrder(i);
-        }
-        cardRepositoryPort.save(card);
+            if (!card.getCardOrder().equals(i)) {
+                card.setCardOrder(i);
+            }
+            cardRepositoryPort.save(card);
         }
     }
 

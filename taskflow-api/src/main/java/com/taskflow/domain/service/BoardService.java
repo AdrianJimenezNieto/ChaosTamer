@@ -79,7 +79,7 @@ public class BoardService implements
     }
 
     // Load the lists of that board
-    List<TaskList> lists = taskListRepositoryPort.findAllByBoard(boardId);
+    List<TaskList> lists = taskListRepositoryPort.findAllByBoardId(boardId);
 
     // Load the cards for each taskList
     for (TaskList list : lists) {

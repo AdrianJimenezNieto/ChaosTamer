@@ -6,6 +6,7 @@ import com.taskflow.infrastructure.adapter.out.persistence.entity.TaskListEntity
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
@@ -24,10 +25,13 @@ public class TaskListPersistenceMapper {
             .title(entity.getTitle())
             .boardId(entity.getBoard() != null ? entity.getBoard().getId() : null)
             .listOrder(entity.getListOrder())
-            .cards(entity.getCards().stream()
-                    .map(cardMapper::toDomain)
-                    .sorted(Comparator.comparing(Card::getCardOrder))
-                    .collect(Collectors.toList())
+            .cards(
+                entity.getCards() != null ?
+                entity.getCards().stream()
+                  .map(cardMapper::toDomain)
+                  .sorted(Comparator.comparing(Card::getCardOrder))
+                  .collect(Collectors.toList()) :
+                new ArrayList<>()
                   )
             .build();
   }
