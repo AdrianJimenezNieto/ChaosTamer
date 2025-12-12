@@ -24,5 +24,6 @@ public class TaskListEntity {
 
   // Owns Tasks
   @OneToMany(mappedBy="taskList", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("card_order ASC")
   private List<CardEntity> cards;
 }

@@ -14,6 +14,8 @@ import com.taskflow.infrastructure.adapter.in.web.dto.CardResponse;
 import com.taskflow.infrastructure.adapter.in.web.dto.TaskListResponse;
 import com.taskflow.infrastructure.adapter.in.web.dto.CreateCardRequest;
 import org.springframework.stereotype.Component;
+
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,7 @@ public class BoardWebMapper {
   // From List of Domain into a DTO List (Response)
   public List<BoardResponse> toResponseList(List<Board> boards) {
     return boards.stream()
+      .sorted(Comparator.comparing(Board::getId))
       .map(this::toResponse)
       .collect(Collectors.toList());
   }
@@ -60,7 +63,10 @@ public class BoardWebMapper {
       .title(list.getTitle())
       .cards(
         list.getCards() != null ?
-        list.getCards().stream().map(this::toCardResponse).collect(Collectors.toList()) :
+        list.getCards().stream()
+            .sorted(Comparator.comparing(Card::getCardOrder))
+            .map(this::toCardResponse)
+            .collect(Collectors.toList()) :
         List.of()
       )
       .build();

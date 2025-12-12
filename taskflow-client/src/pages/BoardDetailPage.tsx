@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard, deleteCard, updateTaskList, deleteTaskList } from "../services/boardService";
+import { useState, useEffect, useRef } from "react";
+import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard, deleteCard, updateTaskList, deleteTaskList, updateBoard } from "../services/boardService";
 import type { BoardDetails, TaskList, Card, ReorderCardRequest } from "../models";
 import TaskColumn from "../components/board/TaskColumn";
 import { CardDetailModal } from "../components/board/CardDetailModal";
@@ -30,7 +30,27 @@ export default function BoardDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [newListTitle, setNewListTitle] = useState('');
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  // MODAL STATE
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // EDIT TITLE STATES
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleInput, setTitleInput] = useState('');  
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync title when board loads
+  useEffect(() => {
+    if (board) {
+      setTitleInput(board.title);
+    }
+  }, [board])
+
+  // Focus the input when editing
+  useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [isEditingTitle])
 
   // Filter to change board state
   const cleanBoardState = (board: BoardDetails): BoardDetails => {
@@ -202,7 +222,37 @@ export default function BoardDetailPage() {
     }
   };
   
-  // -------------------
+  // ------------------- EDIT TITLE HANDLER -------------------------------
+  const handleUpdateBoardTitle = async () => {
+    if (!board) return;
+
+    if (!titleInput.trim() || titleInput === board.title) {
+      setIsEditingTitle(false);
+      setTitleInput(board.title);
+      return;
+    }
+
+    const oldTitle = board.title;
+
+    setBoard({ ...board, title: titleInput});
+    setIsEditingTitle(false);
+
+    try {
+      await updateBoard(board.id, {title: titleInput});
+    } catch (error) {
+      setBoard({ ...board, title: oldTitle});
+      setTitleInput(oldTitle);
+      console.error("Error al actualizar el titulo: ", error)
+    }
+  }
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleUpdateBoardTitle();
+    if (e.key === "Escape") {
+      if (board) setTitleInput(board.title);
+      setIsEditingTitle(false);
+    }
+  }
 
   // useEffect hook: runs when the component is mounted
   useEffect(() => {
@@ -397,7 +447,27 @@ export default function BoardDetailPage() {
     >
 
       <div className="text-white h-screen flex flex-col p-4">
-        <h1 className="mb-4 text-3xl font-bold"> {board?.title} </h1>
+        <div className="flex-1 mb-3"> 
+          {isEditingTitle ? (
+            <input
+              ref={titleInputRef}
+              type="text"
+              value={titleInput}
+              onChange={(e) => setTitleInput(e.target.value)}
+              onBlur={handleUpdateBoardTitle} 
+              onKeyDown={handleTitleKeyDown}
+              className="text-3xl font-bold text-white bg-transparent w-full max-w-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700"
+            />
+          ) : (
+            <h1 
+              onClick={() => setIsEditingTitle(true)}
+              className="text-3xl font-bold text-white cursor-pointer px-2 py-1 transition-colors inline-block border border-transparent"
+              title="Haz clic para editar el título"
+            >
+              {board?.title}
+            </h1>
+          )}
+        </div>
 
         {/* Horizontal container for the lists */}
         <div className="flex h-full gap-4 overflow-x-auto overflow-y-hidden pb-4">
