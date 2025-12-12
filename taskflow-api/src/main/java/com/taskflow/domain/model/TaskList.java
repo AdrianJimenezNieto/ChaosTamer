@@ -13,6 +13,7 @@ import java.util.List;
 public class TaskList {
   private Long id;
   private String title;
+  private Integer listOrder;
   // reference to the parent board
   private Long boardId;
   private List<Card> cards;

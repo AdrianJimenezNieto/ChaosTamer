@@ -2,17 +2,13 @@ package com.taskflow.infrastructure.adapter.in.web.mapper;
 
 import com.taskflow.domain.model.Board;
 import com.taskflow.domain.model.TaskList;
-import com.taskflow.domain.model.Card;
 import com.taskflow.domain.port.in.CreateBoardUseCase;
-import com.taskflow.domain.port.in.CreateTaskListUseCase;
-import com.taskflow.domain.port.in.CreateCardUseCase;
 import com.taskflow.infrastructure.adapter.in.web.dto.CreateBoardRequest;
-import com.taskflow.infrastructure.adapter.in.web.dto.CreateTaskListRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.BoardResponse;
 import com.taskflow.infrastructure.adapter.in.web.dto.BoardDetailResponse;
-import com.taskflow.infrastructure.adapter.in.web.dto.CardResponse;
-import com.taskflow.infrastructure.adapter.in.web.dto.TaskListResponse;
-import com.taskflow.infrastructure.adapter.in.web.dto.CreateCardRequest;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -20,9 +16,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class BoardWebMapper {
+
+  private final TaskListWebMapper taskListWebMapper;
   
-  // from DTO to Command of the use case
+  // from DTO to Command 
   public CreateBoardUseCase.CreateBoardCommand toCommand(CreateBoardRequest request) {
     return new CreateBoardUseCase.CreateBoardCommand(request.getTitle());
   }
@@ -50,45 +49,12 @@ public class BoardWebMapper {
       .title(board.getTitle())
       .lists(
         board.getLists() != null ?
-        board.getLists().stream().map(this::toTaskListResponse).collect(Collectors.toList()) :
+        board.getLists().stream()
+        .sorted(Comparator.comparing(TaskList::getListOrder))
+        .map(taskListWebMapper::toResponse)
+        .collect(Collectors.toList()) :
         List.of() // returns empty list
       )
       .build();
-  }
-
-  // From domain to DTO TaskList
-  public TaskListResponse toTaskListResponse(TaskList list) {
-    return TaskListResponse.builder()
-      .id(list.getId())
-      .title(list.getTitle())
-      .cards(
-        list.getCards() != null ?
-        list.getCards().stream()
-            .sorted(Comparator.comparing(Card::getCardOrder))
-            .map(this::toCardResponse)
-            .collect(Collectors.toList()) :
-        List.of()
-      )
-      .build();
-  }
-
-  // From domain to DTO CardResponse
-  public CardResponse toCardResponse(Card card) {
-    return CardResponse.builder()
-      .id(card.getId())
-      .title(card.getTitle())
-      .description(card.getDescription())
-      .cardOrder(card.getCardOrder())
-      .build();
-  }
-
-  // From request to command (CREATE TASKLIST)
-  public CreateTaskListUseCase.CreateTaskListCommand toCommand(CreateTaskListRequest request, Long boardId) {
-    return new CreateTaskListUseCase.CreateTaskListCommand(request.getTitle(), boardId);
-  }
-
-  // From request to command (CREATE CARD)
-  public CreateCardUseCase.CreateCardCommand toCommand(CreateCardRequest request, Long taskListId){
-    return new CreateCardUseCase.CreateCardCommand(request.getTitle(), taskListId);
   }
 }

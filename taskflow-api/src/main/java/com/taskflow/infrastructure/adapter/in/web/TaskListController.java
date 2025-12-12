@@ -13,7 +13,8 @@ import com.taskflow.infrastructure.adapter.in.web.dto.ReorderCardRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.UpdateTaskListRequest;
 import com.taskflow.infrastructure.adapter.in.web.dto.TaskListResponse;
 
-import com.taskflow.infrastructure.adapter.in.web.mapper.BoardWebMapper;
+import com.taskflow.infrastructure.adapter.in.web.mapper.CardWebMapper;
+import com.taskflow.infrastructure.adapter.in.web.mapper.TaskListWebMapper;
 
 import jakarta.validation.Valid;
 
@@ -37,7 +38,9 @@ public class TaskListController {
   private final ReorderCardUseCase reorderCardsUseCase;
   private final UpdateTaskListUseCase updateTaskListUseCase;
   private final DeleteTaskListUseCase deleteTaskListUseCase;
-  private final BoardWebMapper boardWebMapper;
+
+  private final TaskListWebMapper taskListWebMapper;
+  private final CardWebMapper cardWebMapper;
 
   // US - 203: Create new card in a tasklist
   @PostMapping("/{listId}/cards")
@@ -47,13 +50,13 @@ public class TaskListController {
     @AuthenticationPrincipal UserDetails userDetails
   ) {
     // Map DTO into Command
-    CreateCardUseCase.CreateCardCommand command = boardWebMapper.toCommand(request, listId);
+    CreateCardUseCase.CreateCardCommand command = cardWebMapper.toCommand(request, listId);
 
     // Call the use case
     Card newCard = createCardUseCase.createCard(command, userDetails.getUsername());
 
     // Mapp the result (domain) into response DTO
-    return new ResponseEntity<>(boardWebMapper.toCardResponse(newCard), HttpStatus.CREATED);
+    return new ResponseEntity<>(cardWebMapper.toResponse(newCard), HttpStatus.CREATED);
   }
 
   // Reorder cards endpoint
@@ -77,7 +80,7 @@ public class TaskListController {
   ) {
     TaskList updatedList = updateTaskListUseCase.updateTaskList(taskListId, request, userDetails.getUsername());
 
-    return ResponseEntity.ok(boardWebMapper.toTaskListResponse(updatedList));
+    return ResponseEntity.ok(taskListWebMapper.toResponse(updatedList));
   }
 
   // US-208: Delete a tasklist

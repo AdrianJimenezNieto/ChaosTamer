@@ -124,10 +124,15 @@ public class BoardService implements
       throw new AccessDeniedException("No tienes permiso para añadir listas a este tablero");
     }
 
+    // Initialize the listOrder
+    List<TaskList> existingLists = taskListRepositoryPort.findAllByBoard(board.getId());
+    int newOrder = existingLists.size();
+
     // Create the domain object
     TaskList newTaskList = TaskList.builder()
       .title(command.getTitle())
       .boardId(command.getBoardId())
+      .listOrder(newOrder)
       .build();
 
     // Return using the persistence port

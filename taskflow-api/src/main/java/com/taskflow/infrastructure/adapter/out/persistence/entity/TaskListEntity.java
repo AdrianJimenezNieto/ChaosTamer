@@ -16,6 +16,9 @@ public class TaskListEntity {
   @Column(name = "title", nullable = false)
   private String title;
 
+  @Column(name = "list_order")
+  private Integer listOrder;
+  
   // Relationships
   // Owned by a Board
   @ManyToOne(fetch = FetchType.LAZY)

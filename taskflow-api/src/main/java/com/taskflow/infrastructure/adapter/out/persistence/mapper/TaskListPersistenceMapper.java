@@ -23,6 +23,7 @@ public class TaskListPersistenceMapper {
             .id(entity.getId())
             .title(entity.getTitle())
             .boardId(entity.getBoard() != null ? entity.getBoard().getId() : null)
+            .listOrder(entity.getListOrder())
             .cards(entity.getCards().stream()
                     .map(cardMapper::toDomain)
                     .sorted(Comparator.comparing(Card::getCardOrder))
@@ -36,6 +37,7 @@ public class TaskListPersistenceMapper {
     TaskListEntity entity = new TaskListEntity();
     entity.setId(domain.getId());
     entity.setTitle(domain.getTitle());
+    entity.setListOrder(domain.getListOrder());
     // boardId assigned on the adapter
     return entity;
   }
