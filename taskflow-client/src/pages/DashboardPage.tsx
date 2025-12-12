@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useBoardStore } from "../store/boardStore";
-import { getMyBoards, createBoard } from "../services/boardService";
+import { getMyBoards, createBoard, updateBoard } from "../services/boardService";
 import { Link } from "react-router-dom";
 
 export default function DashboardPage() {
@@ -14,6 +14,13 @@ export default function DashboardPage() {
   const [newBoardTitle, setNewBoardTitle] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // EDITING BOARD STATES
+  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
+  const [editingBoardId, setEditingBoardId] = useState<number | null>(null);
+  const [tempTitle, setTempTitle] = useState('');
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Effect for loading the boards (US-106)
   // It runs only 1 time when the components is built
@@ -35,6 +42,73 @@ export default function DashboardPage() {
     fetchBoards();
   }, [setBoards]);
 
+  // EDIT BOARD HANLDERS
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenuId(null);
+    if (activeMenuId !== null) {
+      window.addEventListener('click', handleClickOutside)
+    }
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [activeMenuId]);
+
+  useEffect(() => {
+    if (editingBoardId !== null && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editingBoardId]);
+
+  const toggleMenu = (e: React.MouseEvent, boardId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveMenuId(activeMenuId === boardId ? null : boardId);
+  }
+
+  const startEditing = (e: React.MouseEvent, boardId: number, currentTitle: string) => {
+    e.preventDefault(); // ¡Importante!
+    e.stopPropagation();
+    setActiveMenuId(null); // Cerrar menú
+    setEditingBoardId(boardId);
+    setTempTitle(currentTitle);
+  };
+  
+
+  const handleUpdateBoard = async () => {
+    if(editingBoardId === null) return;
+
+    const board = boards.find(b => b.id === editingBoardId);
+    if(!tempTitle.trim() || (board && board.title === tempTitle)) {
+      setEditingBoardId(null);
+      return;
+    }
+    try {
+      // Call the API
+      const updatedBoard = await updateBoard(editingBoardId, { title: tempTitle });
+
+      const updatedBoards = boards.map(b => b.id === editingBoardId ? updatedBoard : b);
+      setBoards(updatedBoards);
+
+      // Close the modal
+      setEditingBoardId(null);
+    } catch (error) {
+      console.error("Error al actualizar el tablero: ", error);
+    }
+  }
+
+  const handleDeleteBoard = (e: React.MouseEvent, boardId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    alert("Funcionalidad de borrar el tablero")
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Evitar submit de form si lo hubiera
+        handleUpdateBoard();
+    }
+    if (e.key === 'Escape') setEditingBoardId(null); // Cancelar
+  };
+
   // Function to hanlde the board creation
   const handleCreateBoard = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,6 +123,12 @@ export default function DashboardPage() {
     } catch (error) {
       if (error instanceof Error) setError(error.message);
     }
+  };
+
+  // Evitar que hacer clic en el input navegue al tablero
+  const handleInputClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   // Rendering
@@ -85,16 +165,66 @@ export default function DashboardPage() {
       {/* Board List */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
         {
-          boards.length > 0 ?(
+          boards.length > 0 ? (
             boards.map((board) => (
-              <Link key={board.id} to={`/board/${board.id}`}>
-                <div
-                  className="rounded-lg bg-gray-800 p-4 shadow.lg transition duration-200 hover:scale-105 hover:cursor-pointer"
-                >
-                  <h3 className="font-bold">{board.title}</h3>
-                  {/* TODO: make this a link to /board/{board.id} */}
-                </div>
-              </Link>
+              <div key={board.id} className='relative group'>
+                <Link to={`/board/${board.id}`}>
+                  <div
+                    className="rounded-lg bg-gray-800 p-4 shadow.lg transition duration-200 cursor-pointer"
+                  >
+                    <div className="flex-1 min-w-0 pr-8">
+                      {editingBoardId === board.id ? (
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={tempTitle}
+                          onChange={(e) => setTempTitle(e.target.value)}
+                          onBlur={handleUpdateBoard}
+                          onKeyDown={handleKeyDown}
+                          onClick={handleInputClick}
+                          className="w-full bg-gray-700 text-white border border-blue-500 rounded px-2 py-1 focus:outline-none"
+                        />
+                      ) : (
+                        <h3 className="font-bold text-lg truncate text-white" title={board.title}>
+                          {board.title}
+                        </h3>
+                      )}
+                    </div>
+                    {/* KEBAB MENU */}
+                    <button
+                      onClick={(e) => toggleMenu(e, board.id)}
+                      className="absolute top-3 right-3 p-1 text-gray-400 hover:text-white hover:bg-gray-600 rounded-full transition-all z-10"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                </Link>
+
+                {/* DROPDOWN MENU */}
+                {activeMenuId === board.id && (  
+                  <div
+                    className="absolute top-10 right-2 w-40 bg-white rounded shadow-xl z-20 py-1 overflow-hidden animate-in fade-in zoom-in duration-100"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      onClick={(e) => startEditing(e, board.id, board.title)}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                      Renombrar
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteBoard(e, board.id)}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      Eliminar
+                    </button>
+                    </div>
+                )}
+              </div>
             ))
           ) : (
             <p className="text-gray-400">No tienes tableros. ¡Crea uno!</p>

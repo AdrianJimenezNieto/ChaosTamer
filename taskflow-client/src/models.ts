@@ -40,3 +40,8 @@ export type UpdateCardRequest = {
 export type UpdateTaskListId = {
   title: string;
 }
+
+// Type for the board update
+export type UpdateBoard = {
+  title: string;
+}

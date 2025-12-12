@@ -38,6 +38,7 @@ public class BoardWebMapper {
   // From List of Domain into a DTO List (Response)
   public List<BoardResponse> toResponseList(List<Board> boards) {
     return boards.stream()
+      .sorted(Comparator.comparing(Board::getId))
       .map(this::toResponse)
       .collect(Collectors.toList());
   }
@@ -63,9 +64,9 @@ public class BoardWebMapper {
       .cards(
         list.getCards() != null ?
         list.getCards().stream()
-          .sorted(Comparator.comparing(Card::getCardOrder))
-          .map(this::toCardResponse)
-          .collect(Collectors.toList()) :
+            .sorted(Comparator.comparing(Card::getCardOrder))
+            .map(this::toCardResponse)
+            .collect(Collectors.toList()) :
         List.of()
       )
       .build();
