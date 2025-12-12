@@ -13,9 +13,16 @@ interface TaskColumnProps {
   handleCardClick: (card: Card) => void;
   // function to update the title of a tasklist
   onUpdateTitle: (listId: number, newTitle: string) => Promise<void>;
+  onDeleteList: (listId: number) => Promise<void>;  // Prop for deleting a taskList
 }
 
-export default function TaskColumn({ list, onCardAdded, handleCardClick, onUpdateTitle }: TaskColumnProps) {
+export default function TaskColumn({ 
+  list, 
+  onCardAdded,
+  handleCardClick, 
+  onUpdateTitle,
+  onDeleteList 
+}: TaskColumnProps) {
   const [newCardTitle, setNewCardTitle] = useState('');
   // ---- EDITING STATES -----
   const [isEditing, setIsEditing] = useState(false);
@@ -88,12 +95,21 @@ export default function TaskColumn({ list, onCardAdded, handleCardClick, onUpdat
     }
   };
 
+  // --------------------- DELETING HANDLERS -------------------------------
+  const handleDeleteClick = () => {
+    if (window.confirm(`¿Estás seguro que deseas eliminar la lista "${list.title}" y todas sus tarjetas? Esta acción no se puede revertir`)) {
+      onDeleteList(list.id);
+    }
+  }
+
   return (
     <div className='w-72 flex-shrink-0'>
-      <div className='rounded-lg bg-gray-800 shadow-xl p-4 flex flex-col h-full'>
+      <div className='rounded-lg bg-gray-800 shadow-xl p-4 flex flex-col h-full group'>
 
         {/* EDITABLE HEADER */}
-        <div className='mb-4 font-bold text-gray-700'>
+        <div className='mb-4 font-bold text-gray-700 flex justify-between items-center gap-2'>
+          {/* TITLE ZONE */}
+          <div className='flex-1 min-w-0'>
           {
             isEditing ? (
               <input
@@ -108,12 +124,27 @@ export default function TaskColumn({ list, onCardAdded, handleCardClick, onUpdat
               <h3
                 onClick={() => setIsEditing(true)}
                 title="Haz click para editar el nombre de la lista"
-                className='px-3 py-2 text-white cursor-pointer hover:bg-gray-200 hover:text-gray-700 rounded transition-colors truncate border border-transparent hover:border-gray-300'
+                className='text-xl px-3 py-2 text-white cursor-pointer rounded truncate border border-transparent'
               >
                 {list.title}
               </h3>
             )
           }
+          </div>
+
+          {/* DELETE BUTTON ZONE (shown if not editing)*/}
+          {!isEditing && (
+            <button
+              onClick={handleDeleteClick}
+              className='text-gray-400 hover:text-red-600 p-1 rounded hover:bg-gray-200 transition-all duration-200 ease-in-out opacity-0 group-hover:opacity-100'
+              title='Eliminar Lista'
+            >
+              {/* Trash Icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* List of Cards (with scroll if they are many) */}
