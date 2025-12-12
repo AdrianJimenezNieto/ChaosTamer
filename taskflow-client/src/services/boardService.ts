@@ -89,7 +89,7 @@ export const deleteCard = async(cardId: number): Promise<void> => {
     console.error("Error al eliminar la tarjeta: ", error);
     throw new Error("No se pudo eliminar la tarjeta");
   }
-}
+};
 
 // US-205: Update tasklist title
 export const updateTaskList = async(taskListId: number, data: UpdateTaskListId): Promise<TaskList> => {
@@ -102,7 +102,7 @@ export const updateTaskList = async(taskListId: number, data: UpdateTaskListId):
     console.error("No se pudo editar el título de la lista", error);
     throw new Error("No se pudo editar el título de la lista")
   }
-}
+};
 
 // US-208: Delete TaskList
 export const deleteTaskList = async(taskListId: number): Promise<void> => {
@@ -114,7 +114,7 @@ export const deleteTaskList = async(taskListId: number): Promise<void> => {
     console.error("No se pudo eliminar la lista: ", error);
     throw new Error("No se ha podido eliminar la lista")
   }
-}
+};
 
 // US-204: Update board title
 export const updateBoard = async(boardId: number, data: UpdateBoard): Promise<Board> => {
@@ -127,4 +127,16 @@ export const updateBoard = async(boardId: number, data: UpdateBoard): Promise<Bo
     console.error("No se pudo editar el título del tablero", error);
     throw new Error("No se pudo editar el titulo del tablero")
   }
-}
+};
+
+// US-207: Delete board
+export const deleteBoard = async(boardId: number): Promise<void> => {
+  try {
+    // Call the endpoint to delete
+    api.delete(`/boards/${boardId}`);
+    console.log("🗑️ Tablero borrado correctamente.");
+  } catch (error) {
+    console.error("No se ha podido eliminar el tablero: ", error);
+    throw new Error("No ha sido posible borrar el tablero")
+  }
+};

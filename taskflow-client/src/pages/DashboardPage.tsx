@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useBoardStore } from "../store/boardStore";
-import { getMyBoards, createBoard, updateBoard } from "../services/boardService";
+import { getMyBoards, createBoard, updateBoard, deleteBoard } from "../services/boardService";
 import { Link } from "react-router-dom";
 
 export default function DashboardPage() {
@@ -95,10 +95,30 @@ export default function DashboardPage() {
     }
   }
 
-  const handleDeleteBoard = (e: React.MouseEvent, boardId: number) => {
+  const handleDeleteBoard = async (e: React.MouseEvent, boardId: number) => {
     e.preventDefault();
     e.stopPropagation();
-    alert("Funcionalidad de borrar el tablero")
+
+    const boardToDelete = boards.find(b => b.id === boardId);
+    const confirmMessage = boardToDelete
+      ? `¿Estás seguro de que quieres eliminar el tablero ${boardToDelete.title} y todo lo que contiene?\n\nEsta acción no puede revertirse`
+      : "¿Estás seguro de eliminar este tablero?";
+
+    if (window.confirm(confirmMessage)) {
+      try {
+        // call the service
+        await deleteBoard(boardId);
+
+        // Update local state Zustand
+        const newBoards = boards.filter(b => b.id !== boardId);
+        setBoards(newBoards);
+
+        setActiveMenuId(null); // close the menu
+      } catch (error) {
+        console.error("No se ha podido eliminar el tablero: ", error);
+        // TODO: toast notification
+      }
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

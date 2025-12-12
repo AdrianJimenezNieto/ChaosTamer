@@ -14,5 +14,5 @@ public interface BoardRepositoryPort {
 
   Optional<Board> findById(Long boardId);
 
-  // TODO: rest of the crud
+  void deleteById(Long id);
 }
