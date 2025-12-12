@@ -58,4 +58,9 @@ public class BoardPersistenceAdapter implements BoardRepositoryPort {
     return boardJpaRepository.findById(boardId)
       .map(boardMapper::toDomain);
   }
+
+  @Override
+  public void deleteById(Long boardId) {
+    boardJpaRepository.deleteById(boardId);
+  }
 }

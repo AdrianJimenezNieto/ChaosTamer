@@ -16,6 +16,7 @@ import com.taskflow.domain.port.in.DeleteCardUseCase;
 import com.taskflow.domain.port.in.UpdateTaskListUseCase;
 import com.taskflow.domain.port.in.DeleteTaskListUseCase;
 import com.taskflow.domain.port.in.UpdateBoardUseCase;
+import com.taskflow.domain.port.in.DeleteBoardUseCase;
 
 import com.taskflow.domain.port.out.BoardRepositoryPort;
 import com.taskflow.domain.port.out.CardRepositoryPort;
@@ -48,7 +49,7 @@ public class BoardService implements
   CreateCardUseCase, ReorderCardUseCase,
   UpdateCardUseCase, DeleteCardUseCase,
   UpdateTaskListUseCase, DeleteTaskListUseCase,
-  UpdateBoardUseCase {
+  UpdateBoardUseCase, DeleteBoardUseCase {
   
   private final BoardRepositoryPort boardRepositoryPort;
   private final UserRepositoryPort userRepositoryPort;
@@ -405,5 +406,22 @@ public class BoardService implements
 
     // Save changes and return
     return boardRepositoryPort.save(boardToUpdate);
+  }
+
+  // US-207: Delete board
+  public void deleteBoard(Long boardId, String username) {
+    // get the board
+    Board board = boardRepositoryPort.findById(boardId)
+      .orElseThrow(() -> new EntityNotFoundException("Tablero no encontrado"));
+    
+    // SECURITY
+    User user = userRepositoryPort.findByEmail(username)
+      .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+    if (!board.getUserId().equals(user.getId())) {
+      throw new AccessDeniedException("No tienes permiso para eliminar este tablero");
+    }
+
+    // Delete the board (on cascade)
+    boardRepositoryPort.deleteById(boardId);
   }
 }

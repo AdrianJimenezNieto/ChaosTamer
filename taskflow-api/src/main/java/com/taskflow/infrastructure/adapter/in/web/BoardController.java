@@ -8,6 +8,7 @@ import com.taskflow.domain.port.in.CreateTaskListUseCase;
 import com.taskflow.domain.port.in.GetBoardsByOwnerUseCase;
 import com.taskflow.domain.port.in.GetBoardDetailsUseCase;
 import com.taskflow.domain.port.in.UpdateBoardUseCase;
+import com.taskflow.domain.port.in.DeleteBoardUseCase;
 
 import com.taskflow.infrastructure.adapter.in.web.dto.BoardResponse;
 import com.taskflow.infrastructure.adapter.in.web.dto.CreateBoardRequest;
@@ -38,6 +39,7 @@ public class BoardController {
   private final GetBoardDetailsUseCase getBoardDetailsUseCase;
   private final CreateTaskListUseCase createTaskListUseCase;
   private final UpdateBoardUseCase updateBoardUseCase;
+  private final DeleteBoardUseCase deleteBoardUseCase;
   private final BoardWebMapper boardWebMapper;
 
   // US-105: Create a board
@@ -109,5 +111,17 @@ public class BoardController {
 
     // Map the result and return a 200 OK
     return ResponseEntity.ok(boardWebMapper.toResponse(updateBoard));
+  }
+
+  // US-207: Delete a board
+  @DeleteMapping("/{boardId}")
+  public ResponseEntity<Void> deleteBoard(
+    @PathVariable Long boardId,
+    @AuthenticationPrincipal UserDetails userDetails
+  ) {
+    // Call the service
+    deleteBoardUseCase.deleteBoard(boardId, userDetails.getUsername());
+    // Return no content
+    return ResponseEntity.noContent().build();
   }
 }
