@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
-import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard, deleteCard, updateTaskList, deleteTaskList, updateBoard } from "../services/boardService";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard, deleteCard, updateTaskList, deleteTaskList, updateBoard, reorderTaskList } from "../services/boardService";
 import type { BoardDetails, TaskList, Card, ReorderCardRequest } from "../models";
 import TaskColumn from "../components/board/TaskColumn";
 import { CardDetailModal } from "../components/board/CardDetailModal";
@@ -13,10 +13,11 @@ import {
   useSensor,
   useSensors,
   closestCorners,
+  rectIntersection
 } from '@dnd-kit/core';
-import type { DragStartEvent, DragEndEvent, DragOverEvent } from "@dnd-kit/core";
+import type { DragStartEvent, DragEndEvent, DragOverEvent, CollisionDetection } from "@dnd-kit/core";
 import SortableCard from '../components/board/SortableCard';
-import { arrayMove } from "@dnd-kit/sortable";
+import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 // ----------------------
 
 
@@ -70,6 +71,7 @@ export default function BoardDetailPage() {
 
   // DND-KIT CONFIG ----
   const [activeCard, setActiveCard] = useState<Card | null>(null);
+  const [activeColumn, setActiveColumn] = useState<TaskList | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -95,6 +97,18 @@ export default function BoardDetailPage() {
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
+
+    // If it is a column
+    if (active.data.current?.type === "Column") {
+      setActiveColumn(active.data.current.list);
+      return;
+    }
+
+    // If it is a card
+    if (active.data.current?.type === "Card") {
+      setActiveCard(active.data.current.card);
+    }
+
     const cardId = Number(active.id);
 
     const list = findContainer(cardId);
@@ -105,6 +119,8 @@ export default function BoardDetailPage() {
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
     if (!over || !board) return;
+    if (active.id === over.id) return;
+    if (active.data.current?.type === "Column") return;
 
     const activeId = Number(active.id);
     const overId = Number(over.id)
@@ -181,13 +197,41 @@ export default function BoardDetailPage() {
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    const { over } = event;
+    const { active, over } = event;
     
     // Clean the state
     setActiveCard(null); 
+    setActiveColumn(null);
 
     // Do nothing if we dont drop
     if (!over || !board) return;
+
+    // Moving a column
+    if (active.data.current?.type === "Column") {
+      if (active.id === over.id) return;
+
+      setBoard((prev) => {
+        if (!prev) return null;
+
+        const oldIndex = prev.lists.findIndex(l => l.id === active.id);
+        const newIndex = prev.lists.findIndex(l => l.id === over.id);
+
+        // Reorder in memory
+        const newLists = arrayMove(prev.lists, oldIndex, newIndex);
+
+        // Data for the backend 
+        const requests = newLists.map((list, index) => ({
+          taskListId: list.id,
+          newListOrder: index
+        }));
+
+        // Call the api
+        reorderTaskList(requests);
+
+        return { ...prev, lists: newLists};
+      })
+      return;
+    }
 
     // --- PERSISTENCE LOGIC ---
     
@@ -421,6 +465,19 @@ export default function BoardDetailPage() {
     }
   };
 
+  // Custom collision algorithm
+  const collisionDetectionStrategy: CollisionDetection = useCallback((args) => {
+    const { active } = args;
+
+    // If we are moving a COLUMN
+    if (active.data.current?.type === "Column") {
+      return rectIntersection(args);
+    }
+    
+    // If it is a card use closestcorners
+    return closestCorners(args);
+  }, []);
+
   // Condicional rendering logic
   if (isLoading) {
     // TODO: build a loader
@@ -440,7 +497,7 @@ export default function BoardDetailPage() {
   return(
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={collisionDetectionStrategy}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
@@ -471,21 +528,26 @@ export default function BoardDetailPage() {
 
         {/* Horizontal container for the lists */}
         <div className="flex h-full gap-4 overflow-x-auto overflow-y-hidden pb-4">
+          <SortableContext
+            items={board?.lists.map(l => l.id) || []}
+            strategy={horizontalListSortingStrategy}
+          >
           {/* Map the lists */}
-          {board.lists.length > 0 ? (
-            board.lists.map((list: TaskList) => (
-              <TaskColumn
-                key={list.id}
-                list={list}
-                onCardAdded={handleCardAdded}
-                handleCardClick={handleCardClick}
-                onUpdateTitle={handleUpdateListTitle}
-                onDeleteList={handleDeleteList}
-              />
-            ))
-          ) : (
-            <p className="text-sm text-gray-400">Este tablero aún no tiene listas.</p>
-          )}
+            {board.lists.length > 0 ? (
+              board.lists.map((list: TaskList) => (
+                <TaskColumn
+                  key={list.id}
+                  list={list}
+                  onCardAdded={handleCardAdded}
+                  handleCardClick={handleCardClick}
+                  onUpdateTitle={handleUpdateListTitle}
+                  onDeleteList={handleDeleteList}
+                />
+              ))
+            ) : (
+              <p className="text-sm text-gray-400">Este tablero aún no tiene listas.</p>
+            )}
+          </SortableContext>
 
           {/* Form to add new list (US-202) */}
           <div className="w-72 flex-shrink-0">
@@ -508,9 +570,22 @@ export default function BoardDetailPage() {
         </div>
         {/* Overlay to show the card while its moving */}
         <DragOverlay>
-          {activeCard ? (
-              <SortableCard card={activeCard} onClick={() => handleCardClick(activeCard)}/>
-            ) : null}
+          {activeColumn && (
+            <div className="opacity-80 rotate-2 cursor-grabbing"> 
+              <TaskColumn
+                list={activeColumn}
+                onCardAdded={() => {}}
+                onUpdateTitle={async () => {}}
+                onDeleteList={async () => {}}
+                handleCardClick={() => {}}
+              />
+            </div>
+          )}
+          {activeCard && (
+              <div className="opacity-80 rotate-2 cursor-grabbing"> 
+                <SortableCard card={activeCard} onClick={() => {}}/>
+              </div>
+            )}
         </DragOverlay>
         <CardDetailModal
           isOpen={isModalOpen}

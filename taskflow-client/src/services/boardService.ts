@@ -1,5 +1,5 @@
 import api from '../lib/axios';
-import type { Board, BoardDetails, TaskList, Card, ReorderCardRequest, UpdateCardRequest, UpdateTaskListId, UpdateBoard } from '../models';
+import type { Board, BoardDetails, TaskList, Card, ReorderCardRequest, UpdateCardRequest, UpdateTaskListId, UpdateBoard, ReorderTaskListRequest } from '../models';
 
 // US-106: Bring all of my boards
 export const getMyBoards = async (): Promise<Board[]> => {
@@ -140,3 +140,12 @@ export const deleteBoard = async(boardId: number): Promise<void> => {
     throw new Error("No ha sido posible borrar el tablero")
   }
 };
+
+// Reorder Lists
+export const reorderTaskList = async (requests: ReorderTaskListRequest[]): Promise<void> => {
+  try {
+    await api.put(`tasklists/reorder`, requests);
+  } catch (error) {
+    console.error("Error reordenando las listas: ", error);
+  }
+}

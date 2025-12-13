@@ -45,3 +45,9 @@ export type UpdateTaskListId = {
 export type UpdateBoard = {
   title: string;
 }
+
+// Type for reorder lists
+export type ReorderTaskListRequest = {
+  taskListId: number;
+  newListOrder: number;
+}

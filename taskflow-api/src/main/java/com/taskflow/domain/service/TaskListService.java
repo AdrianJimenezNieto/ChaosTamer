@@ -203,8 +203,6 @@ public class TaskListService implements
         };
 
         lists.sort(comparator);
-        for (TaskList list : lists) {
-        }
 
         for (int i = 0; i < lists.size(); i++) {
             TaskList list = lists.get(i);
