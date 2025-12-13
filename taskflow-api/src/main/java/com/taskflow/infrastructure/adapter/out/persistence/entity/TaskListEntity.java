@@ -2,6 +2,8 @@ package com.taskflow.infrastructure.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -16,6 +18,9 @@ public class TaskListEntity {
   @Column(name = "title", nullable = false)
   private String title;
 
+  @Column(name = "list_order")
+  private Integer listOrder;
+  
   // Relationships
   // Owned by a Board
   @ManyToOne(fetch = FetchType.LAZY)
@@ -25,5 +30,5 @@ public class TaskListEntity {
   // Owns Tasks
   @OneToMany(mappedBy="taskList", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("card_order ASC")
-  private List<CardEntity> cards;
+  private List<CardEntity> cards = new ArrayList<>();
 }

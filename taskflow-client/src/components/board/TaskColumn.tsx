@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { TaskList, Card } from '../../models';
 import { createCard } from '../../services/boardService';
 // DND-KIT IMPORTS
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import SortableCard from './SortableCard';
 
 interface TaskColumnProps {
@@ -23,6 +24,28 @@ export default function TaskColumn({
   onUpdateTitle,
   onDeleteList 
 }: TaskColumnProps) {
+  // ----------------- DND CONFIG FOR THE COLUMN ------------------------------
+  const {
+    setNodeRef: setSortableNodeRef,
+    attributes,
+    listeners,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({
+    id: list.id,
+    data: {
+      type: "Column",
+      list,
+    }
+  })
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
   const [newCardTitle, setNewCardTitle] = useState('');
   // ---- EDITING STATES -----
   const [isEditing, setIsEditing] = useState(false);
@@ -103,11 +126,18 @@ export default function TaskColumn({
   }
 
   return (
-    <div className='w-72 flex-shrink-0'>
-      <div className='rounded-lg bg-gray-800 shadow-xl p-4 flex flex-col h-full group'>
+    <div
+      ref={setSortableNodeRef}
+      style={style} 
+      className='w-72 flex-shrink-0'>
+      <div 
+        className='rounded-lg bg-gray-800 shadow-xl p-4 max-h-full flex flex-col group'>
 
         {/* EDITABLE HEADER */}
-        <div className='mb-4 font-bold text-gray-700 flex justify-between items-center gap-2'>
+        <div
+          {...attributes} 
+          {...listeners}
+          className='mb-4 font-bold text-gray-700 flex justify-between items-center gap-2'>
           {/* TITLE ZONE */}
           <div className='flex-1 min-w-0'>
           {

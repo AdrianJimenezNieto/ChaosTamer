@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface TaskListRepositoryPort {
   
-  List<TaskList> findAllByBoard(Long boardId);
+  List<TaskList> findAllByBoardId(Long boardId);
 
   TaskList save(TaskList taskList);
 

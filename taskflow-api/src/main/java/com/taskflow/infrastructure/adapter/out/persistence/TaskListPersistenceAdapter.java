@@ -24,7 +24,7 @@ public class TaskListPersistenceAdapter implements TaskListRepositoryPort {
   private final TaskListPersistenceMapper taskListMapper;
 
   @Override
-  public List<TaskList> findAllByBoard(Long boardId) {
+  public List<TaskList> findAllByBoardId(Long boardId) {
     return taskListJpaRepository.findAllByBoardId(boardId)
       .stream()
       .map(taskListMapper::toDomain)
@@ -42,6 +42,7 @@ public class TaskListPersistenceAdapter implements TaskListRepositoryPort {
       
       // Update the list title
       taskListEntity.setTitle(taskList.getTitle());
+      taskListEntity.setListOrder(taskList.getListOrder());
     } else {
       taskListEntity = taskListMapper.toEntity(taskList);
 

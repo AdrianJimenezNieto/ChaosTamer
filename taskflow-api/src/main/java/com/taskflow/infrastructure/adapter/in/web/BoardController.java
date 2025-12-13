@@ -18,6 +18,7 @@ import com.taskflow.infrastructure.adapter.in.web.dto.TaskListResponse;
 import com.taskflow.infrastructure.adapter.in.web.dto.UpdateBoardRequest;
 
 import com.taskflow.infrastructure.adapter.in.web.mapper.BoardWebMapper;
+import com.taskflow.infrastructure.adapter.in.web.mapper.TaskListWebMapper;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,9 @@ public class BoardController {
   private final CreateTaskListUseCase createTaskListUseCase;
   private final UpdateBoardUseCase updateBoardUseCase;
   private final DeleteBoardUseCase deleteBoardUseCase;
+
   private final BoardWebMapper boardWebMapper;
+  private final TaskListWebMapper taskListWebMapper;
 
   // US-105: Create a board
   @PostMapping
@@ -90,13 +93,13 @@ public class BoardController {
     @AuthenticationPrincipal UserDetails userDetails
   ){
     // Map the DTO into command
-    CreateTaskListUseCase.CreateTaskListCommand command = boardWebMapper.toCommand(request, boardId);
+    CreateTaskListUseCase.CreateTaskListCommand command = taskListWebMapper.toCommand(request, boardId);
 
     // Call the use case (includes sec check)
     TaskList newTaskList = createTaskListUseCase.createTaskList(command, userDetails.getUsername());
 
     // Map the domain result into response DTO 
-    return new ResponseEntity<>(boardWebMapper.toTaskListResponse(newTaskList), HttpStatus.CREATED);
+    return new ResponseEntity<>(taskListWebMapper.toResponse(newTaskList), HttpStatus.CREATED);
   }
 
   // US-204: Update a board

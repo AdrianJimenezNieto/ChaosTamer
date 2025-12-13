@@ -9,5 +9,6 @@ import java.util.List;
 public class TaskListResponse {
   private Long id;
   private String title;
+  private Integer listOrder;
   private List<CardResponse> cards; // <-- nested
 }
