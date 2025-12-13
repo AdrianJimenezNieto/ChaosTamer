@@ -132,68 +132,70 @@ export default function BoardDetailPage() {
     if (!activeContainer || !overContainer ) {
       return;
     }
+    setTimeout(() => {
+      setBoard((prev) => {
+        if (!prev) return null;
 
-    setBoard((prev) => {
-      if (!prev) return null;
+        const activeList = prev.lists.find(l => l.id === activeContainer.id);
+        const overList = prev.lists.find(l => l.id === overContainer.id);
 
-      const activeList = prev.lists.find(l => l.id === activeContainer.id);
-      const overList = prev.lists.find(l => l.id === overContainer.id);
+        if (!activeList || !overList) return prev;
 
-      if (!activeList || !overList) return prev;
+        const activeItems = (activeContainer.cards || []).filter(c => c);
+        const overItems = (overContainer.cards || []).filter(c => c);
 
-      const activeItems = (activeContainer.cards || []).filter(c => c);
-      const overItems = (overContainer.cards || []).filter(c => c);
+        const activeIndex = activeItems.findIndex((i) => i.id === activeId);
+        const overIndex = overItems.findIndex((i) => i.id === overId);
 
-      const activeIndex = activeItems.findIndex((i) => i.id === activeId);
-      const overIndex = overItems.findIndex((i) => i.id === overId);
-
-      if (activeContainer.id === overContainer.id) {
-        // Reorder on the same list
-        if (activeIndex === overIndex) return prev; // No changes
+        if (activeContainer.id === overContainer.id) {
+          // Reorder on the same list
+          if (activeIndex === overIndex) return prev; // No changes
+          
+          const newState = {
+            ...prev,
+            lists: prev.lists.map(l => {
+                if (l.id === activeContainer.id) {
+                    return { ...l, cards: arrayMove(activeItems, activeIndex, overIndex) };
+                }
+                return l;
+            })
+          };
+          return cleanBoardState(newState);
+        } 
         
-        const newState = {
-          ...prev,
-          lists: prev.lists.map(l => {
+        // Move throught lists
+        else {
+          // Verify is the card is already on the list
+          const isAlreadyInOverContainer = overList.cards.some(c => c.id === activeId);
+          if(isAlreadyInOverContainer) return prev;
+
+          let newIndex;
+          if (overItems.some(c => c.id === overId)) {
+            newIndex = overIndex >= 0 ? overIndex + (active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height ? 1 : 0) : overItems.length;
+          } else {
+            newIndex = overItems.length;
+          }
+
+          const newState = {
+            ...prev,
+            lists: prev.lists.map((l) => {
               if (l.id === activeContainer.id) {
-                  return { ...l, cards: arrayMove(activeItems, activeIndex, overIndex) };
+                return { ...l, cards: activeItems.filter((item) => item.id !== activeId) };
+              }
+              if (l.id === overContainer.id) {
+                const newCardState = { ...activeCard, taskListId: overContainer.id };
+                const newCards = [...overItems];
+                newCards.splice(newIndex, 0, newCardState as Card);
+                return { ...l, cards: newCards };
               }
               return l;
-          })
-        };
-        return cleanBoardState(newState);
-      } 
-      
-      // Move throught lists
-      else {
-        // Verify is the card is already on the list
-        const isAlreadyInOverContainer = overList.cards.some(c => c.id === activeId);
-        if(isAlreadyInOverContainer) return prev;
-
-        let newIndex;
-        if (overItems.some(c => c.id === overId)) {
-          newIndex = overIndex >= 0 ? overIndex + (active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height ? 1 : 0) : overItems.length;
-        } else {
-          newIndex = overItems.length;
+            }),
+          };
+          return cleanBoardState(newState);
         }
-
-        const newState = {
-          ...prev,
-          lists: prev.lists.map((l) => {
-            if (l.id === activeContainer.id) {
-              return { ...l, cards: activeItems.filter((item) => item.id !== activeId) };
-            }
-            if (l.id === overContainer.id) {
-              const newCardState = { ...activeCard, taskListId: overContainer.id };
-              const newCards = [...overItems];
-              newCards.splice(newIndex, 0, newCardState as Card);
-              return { ...l, cards: newCards };
-            }
-            return l;
-          }),
-        };
-        return cleanBoardState(newState);
-      }
-    });
+      });
+    }, 0)
+    
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
