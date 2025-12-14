@@ -12,7 +12,6 @@ public class UserWebMapper {
   public User toDomain(RegisterUserRequest request) {
 
     return User.builder()
-            .userName(request.getUserName())
             .name(request.getName())
             .lastName(request.getLastName())
             .email(request.getEmail())
@@ -23,7 +22,6 @@ public class UserWebMapper {
   public UserResponse toResponse(User domain) {
     UserResponse response = new UserResponse();
     response.setId(domain.getId());
-    response.setUserName(domain.getUserName());
     response.setName(domain.getName());
     response.setLastName(domain.getLastName());
     response.setEmail(domain.getEmail());

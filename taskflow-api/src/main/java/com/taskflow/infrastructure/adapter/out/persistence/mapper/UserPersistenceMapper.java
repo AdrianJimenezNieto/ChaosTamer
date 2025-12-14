@@ -14,7 +14,6 @@ public class UserPersistenceMapper {
     }
     return User.builder()
           .id(entity.getId())
-          .userName(entity.getUserName())
           .name(entity.getName())
           .lastName(entity.getLastName())
           .email(entity.getEmail())
@@ -30,7 +29,6 @@ public class UserPersistenceMapper {
 
     UserEntity entity = new UserEntity();
     entity.setId(domain.getId());
-    entity.setUserName(domain.getUserName());
     entity.setName(domain.getName());
     entity.setLastName(domain.getLastName());
     entity.setEmail(domain.getEmail());
