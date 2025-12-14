@@ -3,10 +3,10 @@ import { useAuthStore } from "../../store/authStore";
 
 export default function ProtectedRoute() {
   // Obtain the token
-  const { token } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
 
   // If token exists, render the component
-  if (token) {
+  if (isAuthenticated) {
     return <Outlet />;
   }
 

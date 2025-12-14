@@ -3,14 +3,18 @@ import LoginPage from './pages/LoginPage.tsx';
 import DashboardPage from './pages/DashboardPage.tsx';
 import ProtectedRoute from './components/auth/ProtectedRoute.tsx';
 import BoardDetailPage from './pages/BoardDetailPage.tsx';
+import { PublicRoute } from './components/auth/PublicRoute.tsx';
 
 function App() {
   return(
     // Dark background for all the app
     <div className='min-h-screen w-full bg-gray-900'>
       <Routes>
-        {/* Public route */}
-        <Route path='/login' element={<LoginPage />} />
+        {/* Public routes */}
+        <Route element={<PublicRoute />}>
+          <Route path='/login' element={<LoginPage />} />
+          <Route path='/register' element={<Navigate to="/dashboard" replace />} />
+        </Route>
 
         {/* Protected Route */}
         <Route element={<ProtectedRoute />}>
@@ -21,7 +25,10 @@ function App() {
         </Route>
 
         {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+        {/* Unkown routes to dashboard */}
+        <Route path='*' element={<Navigate to="/dashboard" replace />}/>
       </Routes>
     </div>
   )
