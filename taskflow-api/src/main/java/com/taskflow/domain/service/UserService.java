@@ -1,10 +1,13 @@
 package com.taskflow.domain.service;
 
 import com.taskflow.domain.model.User;
+import com.taskflow.domain.port.in.GetUserUseCase;
 import com.taskflow.domain.port.in.LoginUserUseCase;
 import com.taskflow.domain.port.in.RegisterUserUseCase;
 import com.taskflow.domain.port.out.UserRepositoryPort;
 import com.taskflow.infrastructure.adapter.out.security.jwt.JwtTokenProvider; // Provider
+
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager; // Manager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +23,7 @@ import com.taskflow.domain.exception.EmailAlreadyExistsException;
 // Here stands the buisness logic for user-related operations
 @Service
 @RequiredArgsConstructor
-public class UserService implements RegisterUserUseCase, LoginUserUseCase {
+public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUserUseCase {
   
   // We depend on the out port (UserRepositoryPort), not the interface
   private final UserRepositoryPort userRepositoryPort;
@@ -64,5 +67,14 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase {
 
     // Generate and return the token
     return tokenProvider.generateToken(authentication);
+  }
+
+  @Override
+  public User getUser(String username) {
+    // Get the user
+    User user = userRepositoryPort.findByEmail(username)
+      .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+    return user;
   }
 }
