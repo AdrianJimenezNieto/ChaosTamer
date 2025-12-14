@@ -1,9 +1,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage.tsx';
-import DashboardPage from './pages/DashboardPage.tsx';
+import LoginPage from './components/pages/LoginPage.tsx';
+import DashboardPage from './components/pages/DashboardPage.tsx';
 import ProtectedRoute from './components/auth/ProtectedRoute.tsx';
-import BoardDetailPage from './pages/BoardDetailPage.tsx';
+import BoardDetailPage from './components/pages/BoardDetailPage.tsx';
 import { PublicRoute } from './components/auth/PublicRoute.tsx';
+import { RegisterPage } from './components/pages/RegisterPage.tsx';
 
 function App() {
   return(
@@ -13,7 +14,7 @@ function App() {
         {/* Public routes */}
         <Route element={<PublicRoute />}>
           <Route path='/login' element={<LoginPage />} />
-          <Route path='/register' element={<Navigate to="/dashboard" replace />} />
+          <Route path='/register' element={<RegisterPage />} />
         </Route>
 
         {/* Protected Route */}
@@ -28,10 +29,11 @@ function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* Unkown routes to dashboard */}
+        {/* TODO: Cutom 404 */}
         <Route path='*' element={<Navigate to="/dashboard" replace />}/>
       </Routes>
     </div>
   )
 }
 
-export default App
+export default App;

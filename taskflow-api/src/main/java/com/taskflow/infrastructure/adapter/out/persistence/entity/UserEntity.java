@@ -13,9 +13,6 @@ public class UserEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment
   private Long id;
 
-  @Column(name = "user_name", nullable = false, unique = true) // Cant be null, must be unique
-  private String userName;
-
   @Column(name = "password", nullable = false)
   private String password;
 
