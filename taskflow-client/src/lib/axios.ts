@@ -11,6 +11,7 @@ export const api = axios.create({
 });
 
 // Axios Interceptor
+//Rquest interceptor
 api.interceptors.request.use(
   (config) => {
     // Obtain the token from Zustand
@@ -29,5 +30,18 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 )
+
+// Response interceptor
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      // Clean the token from the global state
+      useAuthStore.getState().logout();
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export default api;

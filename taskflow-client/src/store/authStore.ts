@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware'; // to save in localStorage
 // Define the "shape" of our state
 interface AuthState {
   token: string | null;
+  isAuthenticated: boolean;
   setToken: (token: string) => void; // Action for saving the token
   logout: () => void; // Action for deleting the token
 }
@@ -14,8 +15,9 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       token: null, // inital state
-      setToken: (token: string) => set({ token }),
-      logout: () => set({ token: null }),
+      isAuthenticated: false,
+      setToken: (token) => set({ token, isAuthenticated: true}),
+      logout: () => set({ token: null, isAuthenticated: false})
     }),
     {
       // name of the localstorage
