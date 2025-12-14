@@ -6,6 +6,7 @@ import BoardDetailPage from './components/pages/BoardDetailPage.tsx';
 import { PublicRoute } from './components/auth/PublicRoute.tsx';
 import { RegisterPage } from './components/pages/RegisterPage.tsx';
 
+
 function App() {
   return(
     // Dark background for all the app

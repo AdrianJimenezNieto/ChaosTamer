@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { Card } from "../../models";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
 
 interface CardDetailModalProps {
     isOpen: boolean;
@@ -113,7 +114,14 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({ isOpen, onClos
                                 className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded transition-colors disabled:opacity-50"
                                 disabled={isLoading}
                             >
-                                { isLoading ? 'Guardando...' : 'Guardar'}
+                                { isLoading ? (
+                                    <div className="flex items-center gap-2">
+                                        <LoadingSpinner size="sm" className="border-gray-400 border-t-white" />
+                                        <span>Guardando...</span>
+                                    </div>
+                                ) : (
+                                    <span>Guardar</span>
+                                )}
                             </button>
                         </div>
                     </div>
