@@ -9,11 +9,20 @@ function classNames(...classes: string[]) {
 }
 
 export const Navbar = () => {
+    // Extract the user info
     const navigate = useNavigate();
     const logout = useAuthStore((state) => state.logout);
+    const { user } = useAuthStore();
 
     // Placeholder fot the initials
-    const userInitials = "AD";
+    let userInitials: string = '';
+    if (user?.name) {
+        userInitials += user.name[0];
+        if (user.lastName) {
+            userInitials += ' ' + user.lastName[0];
+        }
+    }
+    const userEmail = user?.email;
 
     const handleLogOut = () => {
         logout();
@@ -67,7 +76,7 @@ export const Navbar = () => {
                                 <span className="sr-only">Abrir menú de usuario</span>
                                 {/* AVATAR WITH INITIALS */}
                                 <div className="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">
-                                    {userInitials}
+                                    {userInitials.toUpperCase()}
                                 </div>
                             </MenuButton>
                         </div>
@@ -84,7 +93,7 @@ export const Navbar = () => {
                             <MenuItems className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                                 <div className="px-4 py-2 border-b">
                                     <p className="text-sm text-gray-500">Conectado como</p>
-                                    <p className="text-sm font-medium text-gray-900 truncate">usuario@email.com</p>
+                                    <p className="text-sm font-medium text-gray-900 truncate">{userEmail}</p>
                                 </div>
 
                                 <MenuItem>

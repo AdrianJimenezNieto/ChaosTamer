@@ -5,6 +5,7 @@ import { login } from "../../services/authService";
 import { AuthLayout } from "../layouts/AuthLayout";
 // HEADLESSui
 import { Transition } from "@headlessui/react";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
 
 export default function LoginPage() {
   // States of the component
@@ -13,6 +14,8 @@ export default function LoginPage() {
     password: ''
   })
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
 
   // Navigate Hook
   const navigate = useNavigate();
@@ -26,20 +29,22 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // cancell page reload
     setError(null); // delete previous errors
-
+    setIsLoading(true);
     try {
       // call the login service
       await login(formData);
-
       // if exit redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
+      console.log(err)
       // show the error if fails
       if (err instanceof Error) {
         setError(err.message);
       } else {
         setError("Ha ocurrido un error inesperado.")
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -113,7 +118,14 @@ export default function LoginPage() {
           type="submit"
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
         >
-          Entrar
+          { isLoading ? (
+            <div className="flex items-center gap-2">
+                <LoadingSpinner size="sm" className="border-gray-400 border-t-white" />
+                <span>Entrando...</span>
+            </div>
+          ) : (
+            <span>Entrar</span>
+          )}
         </button>
 
         {/* Link to Register */}

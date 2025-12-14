@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { login, register } from "../../services/authService";
 import { Transition } from "@headlessui/react";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
 
 export const RegisterPage: React.FC = () => {
     // Local state for the form
@@ -14,6 +15,9 @@ export const RegisterPage: React.FC = () => {
 
     // Error state
     const [error, setError] = useState<string | null>(null);
+    
+    // Loading state
+    const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -25,6 +29,7 @@ export const RegisterPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         console.log('Datos enviados: ', formData);
+        setIsLoading(true);
         
         try {
             await register(formData);
@@ -44,6 +49,8 @@ export const RegisterPage: React.FC = () => {
             } else {
                 setError("Ha ocurrido un error inesperado.");
             }
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -132,7 +139,14 @@ export const RegisterPage: React.FC = () => {
                 {/* ACTION BUTTON */}
                 <div>
                     <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                        Registrarse
+                        { isLoading ? (
+                            <div className="flex items-center gap-2">
+                                <LoadingSpinner size="sm" className="border-gray-400 border-t-white" />
+                                <span>Registrando usuario...</span>
+                            </div>
+                            ) : (
+                            <span>Registrarse</span>
+                        )}
                     </button>
                 </div>
 

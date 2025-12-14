@@ -1,5 +1,6 @@
 import api from "../lib/axios";
 import { useAuthStore } from "../store/authStore";
+import type { User } from "../models";
 
 // Define the shape of the token (matches the backend DTO)
 interface LoginResponse {
@@ -64,3 +65,14 @@ export const register = async (registerData: RegisterData): Promise<void> => {
     throw new Error("No se pudo crear la cuenta, inténtalo más tarde.");
   }
 };
+
+export const getMe = async (): Promise<User> => {
+  try {
+    const { data } = await api.get<User>('/users/me');
+    console.log("✅ Recuperación del perfil exitosa")
+    return data;
+  } catch (error) {
+    console.error("Error al obtener el perfil del usuario: ", error);
+    throw new Error("Error al obtener el perfil del usuario")
+  }
+}

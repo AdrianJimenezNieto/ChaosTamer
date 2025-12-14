@@ -1,13 +1,23 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import LoginPage from './components/pages/LoginPage.tsx';
 import DashboardPage from './components/pages/DashboardPage.tsx';
 import ProtectedRoute from './components/auth/ProtectedRoute.tsx';
 import BoardDetailPage from './components/pages/BoardDetailPage.tsx';
 import { PublicRoute } from './components/auth/PublicRoute.tsx';
 import { RegisterPage } from './components/pages/RegisterPage.tsx';
+import { useAuthStore } from './store/authStore.ts';
 
 
 function App() {
+  // Extract the session of the global store
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+
+  // Effect to check the session
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth])
+
   return(
     // Dark background for all the app
     <div className='min-h-screen w-full bg-gray-900'>
