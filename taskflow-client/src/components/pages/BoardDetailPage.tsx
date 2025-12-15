@@ -130,7 +130,6 @@ export default function BoardDetailPage() {
     const activeIdString = active.id as string;
     const overIdString = over.id as string;
 
-    console.log(activeIdString, overIdString)
     
     if( activeIdString === overIdString ) return;
     

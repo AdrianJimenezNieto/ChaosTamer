@@ -10,7 +10,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <div className="min-h-screen bg-gray-900">
             <Navbar />
 
-            {children}
+            <main className="h-full w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                {children}
+            </main>
         </div>
     )
 };
