@@ -33,7 +33,7 @@ export default function TaskColumn({
     transition,
     isDragging
   } = useSortable({
-    id: list.id,
+    id: `list-${list.id}`,
     data: {
       type: "Column",
       list,
@@ -54,11 +54,11 @@ export default function TaskColumn({
 
   const cardIds = (list.cards || [])
     .filter(c => c && c.id)
-    .map((c) => String(c.id));
+    .map((c) => `card-${c.id}`);
   
   // Define the droppable zone
   const { setNodeRef } = useDroppable({
-    id: String(list.id),
+    id: `list-${list.id}`,
     data: { type: 'list'},
   });
 
@@ -75,7 +75,6 @@ export default function TaskColumn({
       setNewCardTitle('');
     } catch (error) {
       console.error(error);
-      // TODO: manage local errors
     }
   };
 
@@ -156,7 +155,7 @@ export default function TaskColumn({
                 title="Haz click para editar el nombre de la lista"
                 className='text-xl px-3 py-2 text-white cursor-pointer rounded truncate border border-transparent'
               >
-                {list.title}
+                {list.title} {list.id}
               </h3>
             )
           }

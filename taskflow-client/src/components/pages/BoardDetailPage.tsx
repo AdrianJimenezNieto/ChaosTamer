@@ -84,18 +84,28 @@ export default function BoardDetailPage() {
 
   // DND-FUNCTIONS -----
 
+  // Helper functions
+
   const findContainer = (id: number | string): TaskList | undefined => {
     if (!board) return undefined;
 
-    const targetId = Number(id);
+    if (typeof id === 'string' && id.includes('list-')) {
+      const listId = parseId(id);
+      return board.lists.find((l) => l.id === listId);
+    }
 
-    const listById = board.lists.find((l) => l.id === targetId);
-    if (listById) return listById;
-
+    const targetCardId = parseId(id);
     return board.lists.find((list) =>
-      (list.cards || []).filter(c => c).some((c) => c.id === targetId)
-    )
+      (list.cards || []).some((c) => c.id === targetCardId)
+    );
   }
+
+  const parseId = (id: string | number): number => {
+    if (typeof id === 'number') return id;
+    return Number(id.replace('list-', '').replace('card-', ''));
+  }
+
+  // DND MANAGE DRAGGING
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -110,30 +120,27 @@ export default function BoardDetailPage() {
     if (active.data.current?.type === "Card") {
       setActiveCard(active.data.current.card);
     }
-
-    const cardId = Number(active.id);
-
-    const list = findContainer(cardId);
-    const card = list?.cards.find((c) => c.id === cardId);
-    if (card) setActiveCard(card);
   }
 
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
     if (!over || !board) return;
-    if (active.id === over.id) return;
     if (active.data.current?.type === "Column") return;
 
-    const activeId = Number(active.id);
-    const overId = Number(over.id)
+    const activeIdString = active.id as string;
+    const overIdString = over.id as string;
 
+    console.log(activeIdString, overIdString)
+    
+    if( activeIdString === overIdString ) return;
+    
     // Container detection
-    const activeContainer = findContainer(activeId);
-    const overContainer = findContainer(overId);
+    const activeContainer = findContainer(activeIdString);
+    const overContainer = findContainer(overIdString);
 
-    if (!activeContainer || !overContainer) {
-      return;
-    }
+    
+    if (!activeContainer || !overContainer) return;
+    
     setTimeout(() => {
       setBoard((prev) => {
         if (!prev) return null;
@@ -146,18 +153,34 @@ export default function BoardDetailPage() {
         const activeItems = (activeContainer.cards || []).filter(c => c);
         const overItems = (overContainer.cards || []).filter(c => c);
 
-        const activeIndex = activeItems.findIndex((i) => i.id === activeId);
-        const overIndex = overItems.findIndex((i) => i.id === overId);
+        const activeIndex = activeItems.findIndex((i) => i.id === parseId(activeIdString));
+
+        let overIndex;
+        if (overIdString.includes('card-')) {
+          // Over a card
+          overIndex = overItems.findIndex(c => c.id === parseId(overIdString));
+          const isBelowOverItem =
+            over &&
+            active.rect.current.translated &&
+            active.rect.current.translated.top > over.rect.top + over.rect.height;
+
+          const modifier = isBelowOverItem ? 1 : 0;
+          overIndex = overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
+        } else {
+            // If we are over an empty column (overId is 'list-X')
+            overIndex = overItems.length + 1;
+        }
 
         if (activeContainer.id === overContainer.id) {
           // Reorder on the same list
           if (activeIndex === overIndex) return prev; // No changes
 
+          const targetIndex = overItems.findIndex(c => c.id === parseId(overIdString));
           const newState = {
             ...prev,
             lists: prev.lists.map(l => {
               if (l.id === activeContainer.id) {
-                return { ...l, cards: arrayMove(activeItems, activeIndex, overIndex) };
+                return { ...l, cards: arrayMove(activeItems, activeIndex, targetIndex) };
               }
               return l;
             })
@@ -168,11 +191,11 @@ export default function BoardDetailPage() {
         // Move throught lists
         else {
           // Verify is the card is already on the list
-          const isAlreadyInOverContainer = overList.cards.some(c => c.id === activeId);
+          const isAlreadyInOverContainer = overList.cards.some(c => c.id === parseId(activeIdString));
           if (isAlreadyInOverContainer) return prev;
 
           let newIndex;
-          if (overItems.some(c => c.id === overId)) {
+          if (overItems.some(c => c.id === parseId(overIdString))) {
             newIndex = overIndex >= 0 ? overIndex + (active.rect.current.translated && active.rect.current.translated.top > over.rect.top + over.rect.height ? 1 : 0) : overItems.length;
           } else {
             newIndex = overItems.length;
@@ -182,7 +205,7 @@ export default function BoardDetailPage() {
             ...prev,
             lists: prev.lists.map((l) => {
               if (l.id === activeContainer.id) {
-                return { ...l, cards: activeItems.filter((item) => item.id !== activeId) };
+                return { ...l, cards: activeItems.filter((item) => item.id !== parseId(activeIdString)) };
               }
               if (l.id === overContainer.id) {
                 const newCardState = { ...activeCard, taskListId: overContainer.id };
@@ -210,15 +233,18 @@ export default function BoardDetailPage() {
     // Do nothing if we dont drop
     if (!over || !board) return;
 
+    const activeIdString = active.id as string;
+    const overIdString = over.id as string;
+
     // Moving a column
     if (active.data.current?.type === "Column") {
-      if (active.id === over.id) return;
+      if (activeIdString === overIdString) return;
 
       setBoard((prev) => {
         if (!prev) return null;
 
-        const oldIndex = prev.lists.findIndex(l => l.id === active.id);
-        const newIndex = prev.lists.findIndex(l => l.id === over.id);
+        const oldIndex = prev.lists.findIndex(l => `list-${l.id}` === activeIdString);
+        const newIndex = prev.lists.findIndex(l => `list-${l.id}` === overIdString);
 
         // Reorder in memory
         const newLists = arrayMove(prev.lists, oldIndex, newIndex);
@@ -542,7 +568,7 @@ export default function BoardDetailPage() {
             {/* Horizontal container for the lists */}
             <div className="flex h-full gap-4 overflow-x-auto overflow-y-hidden pb-4">
               <SortableContext
-                items={board?.lists.map(l => l.id) || []}
+                items={board?.lists.map(l => `list-${l.id}`) || []}
                 strategy={horizontalListSortingStrategy}
               >
                 {/* Map the lists */}

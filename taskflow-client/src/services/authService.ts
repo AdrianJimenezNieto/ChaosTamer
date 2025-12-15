@@ -69,7 +69,6 @@ export const register = async (registerData: RegisterData): Promise<void> => {
 export const getMe = async (): Promise<User> => {
   try {
     const { data } = await api.get<User>('/users/me');
-    console.log("✅ Recuperación del perfil exitosa")
     return data;
   } catch (error) {
     console.error("Error al obtener el perfil del usuario: ", error);

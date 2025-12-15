@@ -36,7 +36,6 @@ export const useAuthStore = create<AuthState>()(
         try {
           const user = await getMe();
           set({ user, isAuth: true});
-          console.log("Hola desde aqui")
         } catch (error) {
           console.log("Sesión expirada o inválida");
           set({ token: null, user: null, isAuth: false});
