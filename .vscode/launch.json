@@ -3,11 +3,18 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Launch TaskFlow API (dev)",
+      "name": "Launch ChaosTamer API (dev)",
       "request": "launch",
-      "mainClass": "com.taskflow.TaskflowApplication",
-      "projectName": "taskflow-api",
-      "args": "--spring.profiles.active=dev"
+      "mainClass": "com.chaostamer.ChaosTamerApplication",
+      "projectName": "chaostamer-api",
+      "args": "--spring.profiles.active=dev",
+      "env": {
+        "DB_PASS": "npg_MfnqYD63TsiW",
+        "DB_URL": "jdbc:postgresql://ep-lingering-night-agvag9sx-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+        "DB_USER": "neondb_owner",
+        "FRONTEND_URL": "https://taskflow-xldb.onrender.com",
+        "JWT_SECRET": "dW4tc2VjcmV0by1udWV2by1wYXJhLXRhc2tmbG93LW11Y2hvLW1hcy1zZWd1cm8tZW4tMjAyNS1wYXJhLWhzNTEy",
+      }
     }
   ]
 }
