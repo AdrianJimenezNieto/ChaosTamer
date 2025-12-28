@@ -43,20 +43,3 @@ El núcleo de ChaosTamer reside en su organización. Se ha implementado **Arquit
 * **Tarjetas Interactivas:** Drag & Drop vertical y entre columnas con persistencia de orden en base de datos.
 * **Seguridad por Dueño:** Un usuario solo puede ver, editar o eliminar los tableros de los que es propietario, validado a nivel de servicio.
 * **Edición Inline:** Modificación rápida de títulos de tareas y tableros mediante clics directos.
-
----
-
-## 🚦 Instalación Rápida
-
-### Requisitos
-* Java 17+
-* Node.js 18+
-* PostgreSQL
-
-### Configuración del Backend
-1. Navega a `chaostamer-api`.
-2. Crea un `application.properties` con tus credenciales de Postgres.
-3. Ejecuta con el wrapper de Maven:
-   ```bash
-   ./mvnw clean install -DskipTests
-   ./mvnw spring-boot:run
