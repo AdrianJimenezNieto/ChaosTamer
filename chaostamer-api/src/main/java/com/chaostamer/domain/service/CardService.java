@@ -1,0 +1,249 @@
+package com.chaostamer.domain.service;
+
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+
+import com.chaostamer.domain.model.Board;
+import com.chaostamer.domain.model.Card;
+import com.chaostamer.domain.model.TaskList;
+import com.chaostamer.domain.model.User;
+import com.chaostamer.domain.port.in.CreateCardUseCase;
+import com.chaostamer.domain.port.in.DeleteCardUseCase;
+import com.chaostamer.domain.port.in.ReorderCardUseCase;
+import com.chaostamer.domain.port.in.UpdateCardUseCase;
+import com.chaostamer.domain.port.out.BoardRepositoryPort;
+import com.chaostamer.domain.port.out.CardRepositoryPort;
+import com.chaostamer.domain.port.out.TaskListRepositoryPort;
+import com.chaostamer.domain.port.out.UserRepositoryPort;
+import com.chaostamer.infrastructure.adapter.in.web.dto.ReorderCardRequest;
+import com.chaostamer.infrastructure.adapter.in.web.dto.UpdateCardRequest;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class CardService implements
+    CreateCardUseCase,
+    UpdateCardUseCase,
+    DeleteCardUseCase,
+    ReorderCardUseCase{
+
+    private final CardRepositoryPort cardRepositoryPort;
+    private final TaskListRepositoryPort taskListRepositoryPort;
+    private final BoardRepositoryPort boardRepositoryPort;
+    private final UserRepositoryPort userRepositoryPort;
+    
+    @Override
+    public Card createCard(CreateCardCommand command, String ownerUsername) {
+        // Find the user
+        User user = userRepositoryPort.findByEmail(ownerUsername)
+        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+        // Find the tasklist that belongs to
+        TaskList list = taskListRepositoryPort.findById(command.getTaskListId())
+        .orElseThrow(() -> new EntityNotFoundException("La lista no encontrada"));
+        // Find the board (to verify the owner)
+        Board board = boardRepositoryPort.findById(list.getBoardId())
+        .orElseThrow(() -> new EntityNotFoundException("Tablero no encontrado"));
+
+        // SECURITY CHECK
+        if (!board.getUserId().equals(user.getId())) {
+        throw new AccessDeniedException("No tienes permiso para crear esta tarjeta.");
+        }
+
+        // Existing cards
+        List<Card> existingCards = cardRepositoryPort.findAllByTaskListId(command.getTaskListId());
+
+        // New Position
+        Integer newPosition = existingCards.size();
+
+        // Create the domain object
+        Card newCard = Card.builder()
+        .title(command.getTitle())
+        .taskListId(command.getTaskListId())
+        .cardOrder(newPosition)
+        .build();
+
+        // Persist with the repository port
+        return cardRepositoryPort.save(newCard);
+    }
+
+    @Override
+    @Transactional
+    public void reorderCards(List<ReorderCardRequest> updates, String ownerUsername) {
+        // Get the user
+        User user = userRepositoryPort.findByEmail(ownerUsername)
+        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado."));
+
+        // Identify what cards move 
+        Set<Long> movedCards = updates.stream()
+        .map(ReorderCardRequest::getCardId)
+        .collect(Collectors.toSet());
+
+        // Get the affected lists
+        Set<Long> affectedListIds = updates.stream()
+        .map(ReorderCardRequest::getNewTaskListId)
+        .collect(Collectors.toSet());
+
+        for (Long listId : affectedListIds) {
+            // Get all the cards in the list 
+            List<Card> currentListCards = cardRepositoryPort.findAllByTaskListId(listId);
+
+            // Get the updates for card desined for this list
+            List<ReorderCardRequest> listUpdates = updates.stream()
+                .filter(u -> u.getNewTaskListId().equals(listId))
+                .collect(Collectors.toList());
+
+            Set<Long> allCardIdsInList = new java.util.HashSet<>(currentListCards.stream().map(Card::getId).collect(Collectors.toSet()));
+            listUpdates.forEach(u -> allCardIdsInList.add(u.getCardId()));
+
+            List<Card> cardsToUpdate = cardRepositoryPort.findAllByIds(allCardIdsInList);
+
+            // Apply the changes
+            for (Card card : cardsToUpdate) {
+
+                verifyUserByCard(user, card);
+                
+                ReorderCardRequest update = listUpdates.stream()
+                .filter(u -> u.getCardId().equals(card.getId()))
+                .findFirst()
+                .orElse(null);
+
+                if (update != null) {
+                    card.setTaskListId(update.getNewTaskListId());
+                    card.setCardOrder(update.getNewCardOrder());
+                }
+            }
+            reindexList(cardsToUpdate, movedCards);
+        }
+    }
+
+    private void reindexList(List<Card> cards, Set<Long> movedCardIds) {
+        // Controller of the comparator
+        HashSet<Long> alreadyCompared = new HashSet<>();
+        // Sort them using the comparator
+        Comparator<Card> comparator = (Card c1, Card c2) -> {
+        // Intended order
+        int orderComparison = c1.getCardOrder().compareTo(c2.getCardOrder());
+
+        if (orderComparison != 0) {
+            return orderComparison;
+        }
+
+        // Tie breaker
+        boolean c1WasMoved = movedCardIds.contains(c1.getId());
+        boolean c2WasMoved = movedCardIds.contains(c2.getId());
+
+        if ((c1WasMoved && !c2WasMoved) && !(alreadyCompared.contains(c1.getId()) && alreadyCompared.contains(c2.getId()))) {
+            alreadyCompared.add(c1.getId());
+            alreadyCompared.add(c2.getId());
+            if (c1.getId() < c2.getId()){
+            return 1;
+            }
+            return -1;
+        }
+        if ((!c1WasMoved && c2WasMoved) && !(alreadyCompared.contains(c1.getId()) && alreadyCompared.contains(c2.getId()))) {
+            alreadyCompared.add(c1.getId());
+            alreadyCompared.add(c2.getId());
+            if (c2.getId() < c1.getId()){
+            return -1;
+            }
+            return 1;
+        }
+
+        return c2.getId().compareTo(c1.getId());
+        };
+
+        cards.sort(comparator);
+
+        for (int i = 0; i < cards.size(); i++) {
+            Card card = cards.get(i);
+
+            if (!card.getCardOrder().equals(i)) {
+                card.setCardOrder(i);
+            }
+            cardRepositoryPort.save(card);
+        }
+    }
+
+    private void verifyUserByCard(User user, Card card) {
+    
+        TaskList list = taskListRepositoryPort.findById(card.getTaskListId())
+        .orElseThrow(() -> new EntityNotFoundException("La lista no encontrada"));
+        Board board = boardRepositoryPort.findById(list.getBoardId())
+        .orElseThrow(() -> new EntityNotFoundException("Tablero no encontrado"));
+
+        if (!board.getUserId().equals(user.getId())) {
+        throw new AccessDeniedException("No tienes permiso para crear esta tarjeta.");
+        }
+    }
+
+    
+    // US 203: Update the card info
+    @Override
+    @Transactional
+    public Card updateCard(Long cardId, UpdateCardRequest request, String username) {
+        Card card = cardRepositoryPort.findById(cardId)
+        .orElseThrow(() -> new EntityNotFoundException("Tarjeta no encontrada"));
+        // Security check with username
+        User user = userRepositoryPort.findByEmail(username)
+        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        // Verify permision
+        verifyUserByCard(user, card);
+
+        // Apply changes
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+        card.setTitle(request.getTitle());
+        }
+
+        if (request.getDescription() != null && !request.getDescription().isBlank()) {
+        card.setDescription(request.getDescription());
+        }
+
+        // Save changes and return
+        return cardRepositoryPort.save(card);
+    }
+
+    // US-209: Delete a card by id
+    @Override
+    @Transactional
+    public void deleteCard(Long cardId, String username) {
+        // Get the card
+        Card cardToDelete = cardRepositoryPort.findById(cardId)
+        .orElseThrow(() -> new EntityNotFoundException("No se ha encontrado la tarjeta"));
+        
+        // Security
+        User user = userRepositoryPort.findByEmail(username)
+        .orElseThrow(() -> new EntityNotFoundException("No se ha encontrado el usuario"));
+        verifyUserByCard(user, cardToDelete);
+
+        // Save the ID of list to reorder after this
+        Long taskListId = cardToDelete.getTaskListId();
+
+        // DELETE THE CARD
+        cardRepositoryPort.deleteById(cardId);
+
+        // Reindex 
+        List<Card> remainingCards = cardRepositoryPort.findAllByTaskListId(taskListId);
+        remainingCards.sort(Comparator.comparing(Card::getCardOrder));
+
+        for (int i = 0; i < remainingCards.size(); i++) {
+        Card card = remainingCards.get(i);
+
+        if (!card.getCardOrder().equals(i)){
+            card.setCardOrder(i);
+            cardRepositoryPort.save(card);
+        }
+        }
+    }
+}
