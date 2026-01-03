@@ -1,0 +1,85 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ] # Se activa solo cuando haces push a main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Bajar tu código del repositorio
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. Configurar Java 17 y compilar el Backend (Generar el .jar)
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Build Backend with Maven
+      run: mvn clean package -DskipTests
+
+    # 3. Crear archivo .env para el Frontend (Para que sepa dónde está el back)
+    # Esto sustituye a tu .env.local manual
+    - name: Create Frontend Env File
+      run: |
+        echo "VITE_API_URL=https://chaostamer.duckdns.org/api/v1" > ./frontend/.env
+
+    # 4. Preparar Docker para construir imágenes multi-arquitectura (ARM para Oracle)
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    # 5. Loguearse en Docker Hub (Usando tus secretos)
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # 6. Construir y Subir imagen Backend
+    - name: Build and Push Backend
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/chaostamer-backend:latest
+        platforms: linux/amd64,linux/arm64
+
+    # 7. Construir y Subir imagen Frontend
+    - name: Build and Push Frontend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/chaostamer-frontend:latest
+        platforms: linux/amd64,linux/arm64
+
+    # 8. Copiar el docker-compose.yml actualizado a tu servidor
+    - name: Copy docker-compose to server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_KEY }}
+        source: "docker-compose.yml"
+        target: "~/chaostamer"
+
+    # 9. Conectarse por SSH y reiniciar los contenedores
+    - name: Deploy to Oracle Cloud
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_KEY }}
+        script: |
+          cd ~/chaostamer
+          docker compose pull
+          docker compose up -d
+          docker image prune -f
