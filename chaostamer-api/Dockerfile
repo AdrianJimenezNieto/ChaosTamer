@@ -23,7 +23,7 @@ RUN mvn clean package -DskipTests -Dmaven.test.complie.skip=true
 # FASE 2: RUN
 # ===============================
 # Use a lighter image (only the necesary to run java)
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jdk
 
 # Work directory of the final image
 WORKDIR /app
