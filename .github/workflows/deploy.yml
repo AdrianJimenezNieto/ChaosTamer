@@ -22,6 +22,7 @@ jobs:
     
     - name: Build Backend with Maven
       run: mvn clean package -DskipTests
+      working-directory: ./chaostamer-api
 
     # 3. Crear archivo .env para el Frontend (Para que sepa dónde está el back)
     # Esto sustituye a tu .env.local manual
@@ -47,7 +48,7 @@ jobs:
     - name: Build and Push Backend
       uses: docker/build-push-action@v5
       with:
-        context: .
+        context: ./chaostamer-api
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/chaostamer-backend:latest
         platforms: linux/amd64,linux/arm64
