@@ -19,7 +19,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{
   }
 
   @Override
-  public void registerSompEndpoints(StompEndpointRegistry registry) {
+  public void registerStompEndpoints(StompEndpointRegistry registry) {
     // This is the connection endpoint (the "handshake")
     registry.addEndpoint("/ws-chaostamer")
       .setAllowedOrigins("https://chaostamer.duckdns.org") // Security: only allow this origin
