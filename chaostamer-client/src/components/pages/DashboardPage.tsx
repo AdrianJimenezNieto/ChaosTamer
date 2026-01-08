@@ -4,6 +4,7 @@ import { getMyBoards, createBoard, updateBoard, deleteBoard } from "../../servic
 import { Link } from "react-router-dom";
 import { AppLayout } from "../layouts/AppLayout";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { WebSocketTest } from "../WebSocketTest";
 
 export default function DashboardPage() {
 
@@ -250,6 +251,8 @@ export default function DashboardPage() {
               )
             }
           </div>
+
+          <WebSocketTest />
         </div>
       )}
     </AppLayout>

@@ -22,7 +22,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{
   public void registerStompEndpoints(StompEndpointRegistry registry) {
     // This is the connection endpoint (the "handshake")
     registry.addEndpoint("/ws-chaostamer")
-      .setAllowedOrigins("https://chaostamer.duckdns.org") // Security: only allow this origin
+      .setAllowedOriginPatterns("http://localhost:*") // Cambia esto para desarrollo local
+      // .setAllowedOrigins("https://chaostamer.duckdns.org") // Security: only allow this origin
       .withSockJS();
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import SockJS from 'sockjs-client'
 import Stomp from 'stompjs';
 
@@ -11,7 +11,7 @@ export const WebSocketTest = () => {
   useEffect(() => {
 
     // 1. Connect the endpoint defined in Nginx y SpringBoot
-    const socket = new SockJS('http://chaostamer.duckdns.org/ws-chaostamer');
+    const socket = new SockJS('http://localhost:8080/ws-chaostamer');
     const client = Stomp.over(socket);
 
     client.connect({}, () => {
@@ -29,7 +29,7 @@ export const WebSocketTest = () => {
 
     // Clean the connexion when the component dismount
     return () => {
-      if (client) client.disconnect(() => console.log("Desconectado"));
+      if (client && client.connected) client.disconnect(() => console.log("Desconectado"));
     }
 
   }, []);
@@ -49,6 +49,7 @@ export const WebSocketTest = () => {
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         placeholder="Escribe algo..."
+        className='text-black'
       />
       <button onClick={sendMessage}>Enviar a todos</button>
 
