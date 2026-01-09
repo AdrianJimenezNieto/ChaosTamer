@@ -15,12 +15,14 @@ export type Card = {
   title: string;
   description: string | null;
   cardOrder: number;
+  taskListId: number;
 };
 
 export type TaskList = {
   id: number;
   title: string;
   cards: Card[];
+  listOrder: number;
 };
 
 export type BoardDetails = {

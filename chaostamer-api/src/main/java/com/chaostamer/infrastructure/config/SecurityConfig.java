@@ -62,7 +62,7 @@ public class SecurityConfig {
     configuration.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/api/**", configuration);
+    source.registerCorsConfiguration("/**", configuration);
 
     return source;
   }
@@ -81,6 +81,7 @@ public class SecurityConfig {
           // We able api/v1/users/register to be public
           .requestMatchers(
               "/api/v1/auth/**",
+              "/ws/**",
               "/error"
             ).permitAll()
           // Any other request must be authenticated
