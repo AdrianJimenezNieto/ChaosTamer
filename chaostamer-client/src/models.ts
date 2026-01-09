@@ -15,6 +15,7 @@ export type Card = {
   title: string;
   description: string | null;
   cardOrder: number;
+  taskListId: number;
 };
 
 export type TaskList = {

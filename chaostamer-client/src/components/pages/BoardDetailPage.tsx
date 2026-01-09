@@ -285,38 +285,6 @@ export default function BoardDetailPage() {
     // State Cleaning
     setActiveCard(null);
     setActiveColumn(null);
-
-    // ------------------------ PERSISTENCE LOGIC --------------------------------
-
-    // const updates: ReorderCardRequest[] = [];
-
-    // // For each list of a board
-    // board.lists.forEach((list) => {
-    //   // For each card of a list 
-    //   (list.cards || []).forEach((card, index) => { // Use the index as the order
-    //     if (card && card.id) {
-    //       updates.push({
-    //         cardId: card.id,
-    //         newTaskListId: list.id,
-    //         newCardOrder: index
-    //       });
-    //     }
-    //   });
-    // });
-
-    // // Call the API if there is something to save
-    // if (updates.length > 0) {
-    //   try {
-    //     // Send the full picture of the cards
-    //     console.log("💾 Guardando el nuevo orden...", updates);
-    //     await reorderCardsPersistence(updates);
-    //     console.log("✅ Orden guardado correctamente.");
-    //   } catch (error) {
-    //     console.error("❌ Error al guardar el orden:", error);
-    //     // TODO: createa toast or something to log the errors to the user
-    //     setError("Error de conexión: No se guardó el último movimiento.");
-    //   }
-    // }
   };
 
   // ------------------------ WEBSOCKET HANDLER --------------------------------
@@ -343,7 +311,7 @@ export default function BoardDetailPage() {
         const newLists = prev.lists.map(list => {
           const card = list.cards.find(c => c.id === payload.cardId);
           if (card) {
-            movedCard = {... card, taskListId: payload.targetListId}; // Clone the card
+            movedCard = {... card}; // Clone the card
             return { ...list, cards: list.cards.filter(c => c.id !== payload.cardId)};
           }
           return list;
@@ -364,6 +332,34 @@ export default function BoardDetailPage() {
           })
         };
       });
+    }
+
+    // Case CARD_CREATE
+    if (event.type === 'CARD_CREATE') {
+      const newCard = event.payload as Card;
+      console.log("Recibida nueva tarjeta remota:", newCard);
+
+      setBoard((prev) => {
+        if (!prev) return null;
+
+        // Anti-eco validation
+        const alreadyExists = prev.lists.some(list => 
+          list.cards.some(c => c.id === newCard.id)
+        );
+
+        if (alreadyExists) return prev;
+
+        // Insertion
+        return {
+          ...prev,
+          lists: prev.lists.map(list => {
+            if (list.id === newCard.taskListId) {
+              return { ...list, cards: [...list.cards, newCard]};
+            }
+            return list;
+          })
+        }
+      })
     }
   };
 

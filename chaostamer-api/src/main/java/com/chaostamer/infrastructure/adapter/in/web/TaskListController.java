@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +18,14 @@ import com.chaostamer.domain.port.in.DeleteTaskListUseCase;
 import com.chaostamer.domain.port.in.ReorderCardUseCase;
 import com.chaostamer.domain.port.in.ReorderTaskListUseCase;
 import com.chaostamer.domain.port.in.UpdateTaskListUseCase;
+import com.chaostamer.domain.port.out.TaskListRepositoryPort;
 import com.chaostamer.infrastructure.adapter.in.web.dto.CardResponse;
 import com.chaostamer.infrastructure.adapter.in.web.dto.CreateCardRequest;
 import com.chaostamer.infrastructure.adapter.in.web.dto.ReorderCardRequest;
 import com.chaostamer.infrastructure.adapter.in.web.dto.ReorderTaskListRequest;
 import com.chaostamer.infrastructure.adapter.in.web.dto.TaskListResponse;
 import com.chaostamer.infrastructure.adapter.in.web.dto.UpdateTaskListRequest;
+import com.chaostamer.infrastructure.adapter.in.web.dto.ws.WsEvent;
 import com.chaostamer.infrastructure.adapter.in.web.mapper.CardWebMapper;
 import com.chaostamer.infrastructure.adapter.in.web.mapper.TaskListWebMapper;
 
@@ -40,6 +43,9 @@ public class TaskListController {
   private final DeleteTaskListUseCase deleteTaskListUseCase;
   private final ReorderTaskListUseCase reorderTaskListUseCase;
 
+  private final SimpMessagingTemplate messagingTemplate;
+  private final TaskListRepositoryPort taskListRepositoryPort;
+
   private final TaskListWebMapper taskListWebMapper;
   private final CardWebMapper cardWebMapper;
 
@@ -55,9 +61,31 @@ public class TaskListController {
 
     // Call the use case
     Card newCard = createCardUseCase.createCard(command, userDetails.getUsername());
+    // Create the response 
+    CardResponse response = cardWebMapper.toResponse(newCard);
 
-    // Mapp the result (domain) into response DTO
-    return new ResponseEntity<>(cardWebMapper.toResponse(newCard), HttpStatus.CREATED);
+    // WebSocket Logic
+    try {
+      Long boardId = taskListRepositoryPort.findById(listId)
+        .map(list -> list.getBoardId())
+        .orElseThrow(() -> new RuntimeException("Error de consistencia: Lista sin tablero"));
+
+      // Get the event ready
+      WsEvent<CardResponse> event = WsEvent.<CardResponse>builder()
+        .type("CARD_CREATE")
+        .boardId(boardId)
+        .payload(response)
+        .build();
+
+        // Send the topic 
+        String destination = "/topic/board/" + boardId;
+        messagingTemplate.convertAndSend(destination, event);
+    } catch (Exception e) {
+      System.err.println("Error enviando notificación WS: " + e.getMessage());
+    }
+
+    // Final REST management
+    return new ResponseEntity<>(response, HttpStatus.CREATED);
   }
 
   // Reorder cards endpoint

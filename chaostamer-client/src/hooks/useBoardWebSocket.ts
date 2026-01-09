@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import { useAuthStore } from "../store/authStore";
+import type { Card } from "../models";
 
 // Define the payload we sit in Java
 export interface CardMovePayload {
@@ -10,11 +11,9 @@ export interface CardMovePayload {
   newPosition: number;
 }
 
-export type WsEvent = {
-  type: 'CARD_MOVE' | 'CARD_CREATE';
-  boardId: number;
-  payload: any;
-}
+export type WsEvent = 
+  | { type: 'CARD_MOVE'; boardId: number; payload: CardMovePayload}
+  | { type: 'CARD_CREATE'; boardId: number; payload: Card };
 
 export const useBoardWebSocket = (
   boardId: string | undefined,
