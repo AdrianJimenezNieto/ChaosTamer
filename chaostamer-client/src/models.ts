@@ -22,6 +22,7 @@ export type TaskList = {
   id: number;
   title: string;
   cards: Card[];
+  listOrder: number;
 };
 
 export type BoardDetails = {

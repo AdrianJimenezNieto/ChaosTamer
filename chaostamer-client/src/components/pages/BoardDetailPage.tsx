@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard, deleteCard, updateTaskList, deleteTaskList, updateBoard, reorderTaskList } from "../../services/boardService";
-import type { BoardDetails, TaskList, Card, ReorderCardRequest } from "../../models";
+import type { BoardDetails, TaskList, Card, ReorderCardRequest, ReorderTaskListRequest } from "../../models";
 import TaskColumn from "../board/TaskColumn";
 import { CardDetailModal } from "../board/CardDetailModal";
 import { AppLayout } from "../layouts/AppLayout";
@@ -377,6 +377,32 @@ export default function BoardDetailPage() {
           }))
         };
       });
+    }
+
+    // LIST MOVE
+    if (event.type === 'LIST_MOVE') {
+      const changes = event.payload as ReorderTaskListRequest[];
+      console.log('Reordenando listas remotas:', changes);
+
+      setBoard((prev) => {
+        if (!prev) return null;
+
+        // Create a fast access map
+        const orderMap = new Map(changes.map(c => [c.taskListId, c.newListOrder]));
+
+        // Clone and assign the now orders
+        const newLists = prev.lists.map(list => {
+          if (orderMap.has(list.id)) {
+            return { ...list, listOrder: orderMap.get(list.id)! };
+          }
+          return list;
+        });
+
+        // Order the array based on 'listOrder'
+        newLists.sort((a,b) => a.listOrder - b.listOrder);
+
+        return { ...prev, lists: newLists};
+      })
     }
   };
 

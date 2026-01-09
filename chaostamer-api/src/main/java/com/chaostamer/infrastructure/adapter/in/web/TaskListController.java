@@ -130,6 +130,29 @@ public class TaskListController {
     @AuthenticationPrincipal UserDetails userDetails
   ) {
     reorderTaskListUseCase.reorderTaskLists(requests, userDetails.getUsername());
+
+    // WebSockets
+    if (!requests.isEmpty()) {
+      try {
+        // Find the board ID
+        Long listId = requests.get(0).getTaskListId();
+        Long boardId = taskListRepositoryPort.findById(listId)
+          .map(TaskList::getBoardId)
+          .orElse(null);
+  
+        if (boardId != null) {
+          WsEvent<List<ReorderTaskListRequest>> event = WsEvent.<List<ReorderTaskListRequest>>builder()
+            .type("LIST_MOVE")
+            .boardId(boardId)
+            .payload(requests)
+            .build();
+          
+          messagingTemplate.convertAndSend("/topic/board/" + boardId, event);
+        }
+      } catch (Exception e) {
+        System.err.println("Error WS List Move: " + e.getMessage());
+      }
+    }
     return ResponseEntity.noContent().build();
   }
 }
