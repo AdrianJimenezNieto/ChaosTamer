@@ -334,7 +334,7 @@ export default function BoardDetailPage() {
       });
     }
 
-    // Case CARD_CREATE
+    //  CARD_CREATE
     if (event.type === 'CARD_CREATE') {
       const newCard = event.payload as Card;
       console.log("Recibida nueva tarjeta remota:", newCard);
@@ -360,6 +360,23 @@ export default function BoardDetailPage() {
           })
         }
       })
+    }
+
+    // CARD_DELETE
+    if (event.type === 'CARD_DELETE') {
+      const deletedCard = event.payload as number;
+      console.log("🗑️ Eliminada tarjeta remota:", deleteCard);
+
+      setBoard((prev) => {
+        if(!prev) return null;
+        return {
+          ... prev,
+          lists: prev.lists.map(list => ({
+            ...list,
+            cards: list.cards.filter(c => c.id !== deletedCard)
+          }))
+        };
+      });
     }
   };
 

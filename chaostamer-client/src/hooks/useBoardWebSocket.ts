@@ -13,7 +13,8 @@ export interface CardMovePayload {
 
 export type WsEvent = 
   | { type: 'CARD_MOVE'; boardId: number; payload: CardMovePayload}
-  | { type: 'CARD_CREATE'; boardId: number; payload: Card };
+  | { type: 'CARD_CREATE'; boardId: number; payload: Card }
+  | { type: 'CARD_DELETE'; boardId: number; payload: number};
 
 export const useBoardWebSocket = (
   boardId: string | undefined,
