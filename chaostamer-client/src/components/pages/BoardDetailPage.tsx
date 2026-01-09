@@ -5,6 +5,8 @@ import type { BoardDetails, TaskList, Card, ReorderCardRequest } from "../../mod
 import TaskColumn from "../board/TaskColumn";
 import { CardDetailModal } from "../board/CardDetailModal";
 import { AppLayout } from "../layouts/AppLayout";
+import { useBoardWebSocket } from "../../hooks/useBoardWebSocket";
+import type { CardMovePayload } from "../../hooks/useBoardWebSocket"
 
 // --- IMPORTS DND-KIT ---
 import {
@@ -71,7 +73,7 @@ export default function BoardDetailPage() {
     }
   }
 
-  // DND-KIT CONFIG ----
+  // ------------ DND-KIT CONFIG ---------------------
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [activeColumn, setActiveColumn] = useState<TaskList | null>(null);
 
@@ -262,38 +264,111 @@ export default function BoardDetailPage() {
       return;
     }
 
-    // --- PERSISTENCE LOGIC ---
+    const activeIdNum = parseId(activeIdString);
+    const destList = board.lists.find(l => l.cards.some(c => c.id === activeIdNum));
 
-    const updates: ReorderCardRequest[] = [];
+    if (destList) {
+      const destCards = destList.cards;
+      const newIndex = destCards.findIndex(c => c.id === activeIdNum);
 
-    // For each list of a board
-    board.lists.forEach((list) => {
-      // For each card of a list 
-      (list.cards || []).forEach((card, index) => { // Use the index as the order
-        if (card && card.id) {
-          updates.push({
-            cardId: card.id,
-            newTaskListId: list.id,
-            newCardOrder: index
-          });
-        }
-      });
-    });
-
-    // Call the API if there is something to save
-    if (updates.length > 0) {
-      try {
-        // Send the full picture of the cards
-        console.log("💾 Guardando el nuevo orden...", updates);
-        await reorderCardsPersistence(updates);
-        console.log("✅ Orden guardado correctamente.");
-      } catch (error) {
-        console.error("❌ Error al guardar el orden:", error);
-        // TODO: createa toast or something to log the errors to the user
-        setError("Error de conexión: No se guardó el último movimiento.");
+      const movePayload: CardMovePayload = {
+        cardId: activeIdNum,
+        sourceListId: 0,
+        targetListId: destList.id,
+        newPosition: newIndex
       }
+
+      console.log("Enviando movimiento WS:", movePayload);
+      sendCardMove(movePayload);
+    }
+
+    // State Cleaning
+    setActiveCard(null);
+    setActiveColumn(null);
+
+    // ------------------------ PERSISTENCE LOGIC --------------------------------
+
+    // const updates: ReorderCardRequest[] = [];
+
+    // // For each list of a board
+    // board.lists.forEach((list) => {
+    //   // For each card of a list 
+    //   (list.cards || []).forEach((card, index) => { // Use the index as the order
+    //     if (card && card.id) {
+    //       updates.push({
+    //         cardId: card.id,
+    //         newTaskListId: list.id,
+    //         newCardOrder: index
+    //       });
+    //     }
+    //   });
+    // });
+
+    // // Call the API if there is something to save
+    // if (updates.length > 0) {
+    //   try {
+    //     // Send the full picture of the cards
+    //     console.log("💾 Guardando el nuevo orden...", updates);
+    //     await reorderCardsPersistence(updates);
+    //     console.log("✅ Orden guardado correctamente.");
+    //   } catch (error) {
+    //     console.error("❌ Error al guardar el orden:", error);
+    //     // TODO: createa toast or something to log the errors to the user
+    //     setError("Error de conexión: No se guardó el último movimiento.");
+    //   }
+    // }
+  };
+
+  // ------------------------ WEBSOCKET HANDLER --------------------------------
+  const handleWebSocketEvent = (event: any) => {
+    // CARD_MOVE
+    if (event.type === 'CARD_MOVE') {
+      const payload = event.payload as CardMovePayload;
+
+      setBoard((prev) => {
+        if (!prev) return null;
+
+        const currentDestList = prev.lists.find(l => l.id === payload.targetListId);
+        const cardInDest = currentDestList?.cards.find(c => c.id === payload.cardId);
+
+        // Ignore card if it is in the right place
+        if (cardInDest && currentDestList?.cards.indexOf(cardInDest) === payload.newPosition) {
+          return prev;
+        }
+
+        console.log("Recibido movimiento remoto:", payload);
+        // State movement logic
+        // Find the card on the board and delete it
+        let movedCard: Card | undefined;
+        const newLists = prev.lists.map(list => {
+          const card = list.cards.find(c => c.id === payload.cardId);
+          if (card) {
+            movedCard = {... card, taskListId: payload.targetListId}; // Clone the card
+            return { ...list, cards: list.cards.filter(c => c.id !== payload.cardId)};
+          }
+          return list;
+        });
+
+        if (!movedCard) return prev; // Abort if the card was not found
+
+        // Insert the found card into the destiny list
+        return {
+          ...prev,
+          lists: newLists.map(list => {
+            if (list.id === payload.targetListId) {
+              const newCards = [...list.cards];
+              newCards.splice(payload.newPosition, 0, movedCard!);
+              return { ...list, cards: newCards};
+            }
+            return list;
+          })
+        };
+      });
     }
   };
+
+  // Initialice Hook
+  const { sendCardMove } = useBoardWebSocket(boardId, handleWebSocketEvent);
 
   // ------------------- EDIT TITLE HANDLER -------------------------------
   const handleUpdateBoardTitle = async () => {

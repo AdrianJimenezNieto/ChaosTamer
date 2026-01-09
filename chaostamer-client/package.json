@@ -14,13 +14,13 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@headlessui/react": "^2.2.9",
+    "@stomp/stompjs": "^7.2.1",
     "axios": "^1.13.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.5",
     "socket-client": "^1.0.0",
     "sockjs-client": "^1.6.1",
-    "stompjs": "^2.3.3",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
@@ -29,7 +29,6 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/sockjs-client": "^1.5.4",
-    "@types/stompjs": "^2.3.10",
     "@vitejs/plugin-react": "^5.1.0",
     "autoprefixer": "^10.4.22",
     "eslint": "^9.39.1",

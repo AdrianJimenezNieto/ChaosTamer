@@ -12,7 +12,7 @@ export const api = axios.create({
 });
 
 // Axios Interceptor
-//Rquest interceptor
+// Rquest interceptor
 api.interceptors.request.use(
   (config) => {
     // Obtain the token from Zustand
