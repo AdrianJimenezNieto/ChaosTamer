@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { useBoardStore } from "../../store/boardStore";
-import { getMyBoards, createBoard, updateBoard, deleteBoard } from "../../services/boardService";
+import { useBoardStore } from "../store/boardStore";
+import { getMyBoards, createBoard, updateBoard, deleteBoard } from "../services/boardService";
 import { Link } from "react-router-dom";
-import { AppLayout } from "../layouts/AppLayout";
-import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { AppLayout } from "../components/layouts/AppLayout";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 
 export default function DashboardPage() {
 

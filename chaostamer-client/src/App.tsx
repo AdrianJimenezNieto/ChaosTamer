@@ -1,11 +1,14 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import LoginPage from './components/pages/LoginPage.tsx';
-import DashboardPage from './components/pages/DashboardPage.tsx';
+
+import LoginPage from './pages/LoginPage.tsx';
+import { RegisterPage } from './pages/RegisterPage.tsx';
+import DashboardPage from './pages/DashboardPage.tsx';
+import BoardDetailPage from './pages/BoardDetailPage.tsx';
+
 import ProtectedRoute from './components/auth/ProtectedRoute.tsx';
-import BoardDetailPage from './components/pages/BoardDetailPage.tsx';
 import { PublicRoute } from './components/auth/PublicRoute.tsx';
-import { RegisterPage } from './components/pages/RegisterPage.tsx';
+
 import { useAuthStore } from './store/authStore.ts';
 
 

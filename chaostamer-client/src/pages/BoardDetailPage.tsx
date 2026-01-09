@@ -1,12 +1,16 @@
 import { Link, useParams } from "react-router-dom";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { getBoardDetails, createTaskList, reorderCardsPersistence, updateCard, deleteCard, updateTaskList, deleteTaskList, updateBoard, reorderTaskList } from "../../services/boardService";
-import type { BoardDetails, TaskList, Card, ReorderCardRequest, ReorderTaskListRequest } from "../../models";
-import TaskColumn from "../board/TaskColumn";
-import { CardDetailModal } from "../board/CardDetailModal";
-import { AppLayout } from "../layouts/AppLayout";
-import { useBoardWebSocket } from "../../hooks/useBoardWebSocket";
-import type { CardMovePayload } from "../../hooks/useBoardWebSocket"
+
+import { LoadingSpinner } from '../components/ui/LoadingSpinner'
+import type { BoardDetails, Card, TaskList } from "../types/board.types";
+import { createTaskList, deleteTaskList, reorderTaskList, updateTaskList } from "../services/taskListService";
+import { useBoardWebSocket, type CardMovePayload } from "../hooks/useBoardWebSocket";
+import { deleteCard, updateCard } from "../services/cardService";
+import type { ReorderTaskListRequest } from "../types/api.types";
+import { getBoardDetails, updateBoard } from "../services/boardService";
+import { AppLayout } from "../components/layouts/AppLayout";
+import TaskColumn from "../components/board/TaskColumn";
+import { CardDetailModal } from "../components/board/CardDetailModal";
 
 // --- IMPORTS DND-KIT ---
 import {
@@ -19,9 +23,8 @@ import {
   rectIntersection
 } from '@dnd-kit/core';
 import type { DragStartEvent, DragEndEvent, DragOverEvent, CollisionDetection } from "@dnd-kit/core";
-import SortableCard from '../board/SortableCard';
+import SortableCard from '../components/board/SortableCard';
 import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
-import { LoadingSpinner } from "../ui/LoadingSpinner";
 // ----------------------
 
 

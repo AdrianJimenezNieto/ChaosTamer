@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { Card } from "../../models";
+import type { Card } from "../../types/board.types";
 
 interface Props {
   card: Card;

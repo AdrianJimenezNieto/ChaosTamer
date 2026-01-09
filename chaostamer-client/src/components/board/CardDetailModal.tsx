@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import type { Card } from "../../models";
+import type { Card } from "../../types/board.types";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 
 interface CardDetailModalProps {

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { TaskList, Card } from '../../models';
-import { createCard } from '../../services/boardService';
+
+import type { Card, TaskList } from '../../types/board.types';
+import { createCard } from '../../services/cardService';
+
 // DND-KIT IMPORTS
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';

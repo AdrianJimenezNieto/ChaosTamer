@@ -1,9 +1,9 @@
 import React, { Fragment, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthLayout } from "../layouts/AuthLayout";
-import { login, register } from "../../services/authService";
+import { AuthLayout } from "../components/layouts/AuthLayout";
+import { login, register } from "../services/authService";
 import { Transition } from "@headlessui/react";
-import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 
 export const RegisterPage: React.FC = () => {
     // Local state for the form

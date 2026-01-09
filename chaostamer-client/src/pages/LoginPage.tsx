@@ -1,11 +1,11 @@
 import React, { useState, Fragment } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../../services/authService";
+import { login } from "../services/authService";
 // Components
-import { AuthLayout } from "../layouts/AuthLayout";
+import { AuthLayout } from "../components/layouts/AuthLayout";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 // HEADLESSui
 import { Transition } from "@headlessui/react";
-import { LoadingSpinner } from "../ui/LoadingSpinner";
 
 export default function LoginPage() {
   // States of the component
