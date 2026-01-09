@@ -17,16 +17,16 @@ import com.chaostamer.domain.model.Board;
 import com.chaostamer.domain.model.Card;
 import com.chaostamer.domain.model.TaskList;
 import com.chaostamer.domain.model.User;
-import com.chaostamer.domain.port.in.CreateCardUseCase;
-import com.chaostamer.domain.port.in.DeleteCardUseCase;
-import com.chaostamer.domain.port.in.ReorderCardUseCase;
-import com.chaostamer.domain.port.in.UpdateCardUseCase;
+import com.chaostamer.domain.port.in.card.CreateCardUseCase;
+import com.chaostamer.domain.port.in.card.DeleteCardUseCase;
+import com.chaostamer.domain.port.in.card.ReorderCardUseCase;
+import com.chaostamer.domain.port.in.card.UpdateCardUseCase;
 import com.chaostamer.domain.port.out.BoardRepositoryPort;
 import com.chaostamer.domain.port.out.CardRepositoryPort;
 import com.chaostamer.domain.port.out.TaskListRepositoryPort;
 import com.chaostamer.domain.port.out.UserRepositoryPort;
-import com.chaostamer.infrastructure.adapter.in.web.dto.ReorderCardRequest;
-import com.chaostamer.infrastructure.adapter.in.web.dto.UpdateCardRequest;
+import com.chaostamer.infrastructure.adapter.in.rest.dto.card.ReorderCardRequest;
+import com.chaostamer.infrastructure.adapter.in.rest.dto.card.UpdateCardRequest;
 
 import lombok.RequiredArgsConstructor;
 

@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 
 import com.chaostamer.domain.exception.EmailAlreadyExistsException;
 import com.chaostamer.domain.model.User;
-import com.chaostamer.domain.port.in.GetUserUseCase;
-import com.chaostamer.domain.port.in.LoginUserUseCase;
-import com.chaostamer.domain.port.in.RegisterUserUseCase;
+import com.chaostamer.domain.port.in.auth.GetUserUseCase;
+import com.chaostamer.domain.port.in.auth.LoginUserUseCase;
+import com.chaostamer.domain.port.in.auth.RegisterUserUseCase;
 import com.chaostamer.domain.port.out.UserRepositoryPort;
 import com.chaostamer.infrastructure.adapter.out.security.jwt.JwtTokenProvider;
 

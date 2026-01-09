@@ -18,7 +18,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.chaostamer.infrastructure.adapter.in.web.filter.JwtAuthenticationFilter;
+import com.chaostamer.infrastructure.adapter.in.rest.filter.JwtAuthenticationFilter;
 
 import org.springframework.beans.factory.annotation.Value;
 
