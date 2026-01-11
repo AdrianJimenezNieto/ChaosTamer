@@ -1,28 +1,42 @@
-// Type for the reorder request
+import type { Card } from "./board.types"; 
+
+// --- REST API REQUESTS ---
+
 export type ReorderCardRequest = {
   cardId: number;
   newTaskListId: number;
   newCardOrder: number;
 };
 
-// Type for updating the cards
 export type UpdateCardRequest = {
   title?: string;
   description?: string;
 };
 
-// Type for updating tasklists
-export type UpdateTaskListId = {
+export type UpdateTaskListRequest = {
   title: string;
 }
 
-// Type for the board update
-export type UpdateBoard = {
+export type UpdateBoardRequest = {
   title: string;
 }
 
-// Type for reorder lists
 export type ReorderTaskListRequest = {
   taskListId: number;
   newListOrder: number;
 }
+
+// --- WEBSOCKET TYPES ---
+
+export interface CardMovePayload {
+  cardId: number;
+  sourceListId: number;
+  targetListId: number;
+  newPosition: number;
+}
+
+export type WsEvent = 
+  | { type: 'CARD_MOVE'; boardId: number; payload: CardMovePayload }
+  | { type: 'CARD_CREATE'; boardId: number; payload: Card }
+  | { type: 'CARD_DELETE'; boardId: number; payload: number }
+  | { type: 'LIST_MOVE'; boardId: number; payload: ReorderTaskListRequest[] };

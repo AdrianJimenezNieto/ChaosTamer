@@ -1,21 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import { useAuthStore } from "../store/authStore";
-import type { Card, ReorderTaskListRequest } from "../models";
-
-// Define the payload we sit in Java
-export interface CardMovePayload {
-  cardId: number;
-  sourceListId: number;
-  targetListId: number;
-  newPosition: number;
-}
-
-export type WsEvent = 
-  | { type: 'CARD_MOVE'; boardId: number; payload: CardMovePayload}
-  | { type: 'CARD_CREATE'; boardId: number; payload: Card }
-  | { type: 'CARD_DELETE'; boardId: number; payload: number}
-  | { type: 'LIST_MOVE'; boardId: number; payload: ReorderTaskListRequest[] };
+import type { WsEvent, CardMovePayload } from "../types/api.types";
 
 export const useBoardWebSocket = (
   boardId: string | undefined,

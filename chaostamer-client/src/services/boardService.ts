@@ -1,6 +1,6 @@
 import api from '../lib/axios';
 import type { Board, BoardDetails } from '../types/board.types';
-import type { UpdateBoard } from '../types/api.types';
+import type { UpdateBoardRequest } from '../types/api.types';
 
 // US-106: Bring all of my boards
 export const getMyBoards = async (): Promise<Board[]> => {
@@ -37,7 +37,7 @@ export const getBoardDetails = async (boardId: string): Promise<BoardDetails> =>
 };
 
 // US-204: Update board title
-export const updateBoard = async(boardId: number, data: UpdateBoard): Promise<Board> => {
+export const updateBoard = async(boardId: number, data: UpdateBoardRequest): Promise<Board> => {
   try {
     // Call the endpoint
     const response = await api.patch<Board>(`/boards/${boardId}`, data);
@@ -53,7 +53,7 @@ export const updateBoard = async(boardId: number, data: UpdateBoard): Promise<Bo
 export const deleteBoard = async(boardId: number): Promise<void> => {
   try {
     // Call the endpoint to delete
-    api.delete(`/boards/${boardId}`);
+    await api.delete(`/boards/${boardId}`);
     console.log("🗑️ Tablero borrado correctamente.");
   } catch (error) {
     console.error("No se ha podido eliminar el tablero: ", error);

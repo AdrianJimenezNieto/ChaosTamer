@@ -1,5 +1,5 @@
 import api from "../lib/axios";
-import type { ReorderTaskListRequest, UpdateTaskListId } from "../types/api.types";
+import type { ReorderTaskListRequest, UpdateTaskListRequest } from "../types/api.types";
 import type { TaskList } from "../types/board.types";
 
 // US-202: Create new TaskList
@@ -15,7 +15,7 @@ export const createTaskList = async (boardId: string, title: string): Promise<Ta
 };
 
 // US-205: Update tasklist title
-export const updateTaskList = async(taskListId: number, data: UpdateTaskListId): Promise<TaskList> => {
+export const updateTaskList = async(taskListId: number, data: UpdateTaskListRequest): Promise<TaskList> => {
   try {
     // Call the api
     const response = await api.patch<TaskList>(`/tasklists/${taskListId}`, data);

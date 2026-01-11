@@ -3,7 +3,7 @@ import type { Card } from "../types/board.types";
 import type { ReorderCardRequest, UpdateCardRequest } from "../types/api.types";
 
 // US-203: Create new card on a list
-export const createCard = async(taskListId: number, title: String): Promise<Card> => {
+export const createCard = async(taskListId: number, title: string): Promise<Card> => {
   try{
     const response = await api.post<Card>(`/tasklists/${taskListId}/cards`, { title });
     return response.data;
@@ -17,7 +17,7 @@ export const createCard = async(taskListId: number, title: String): Promise<Card
 export const reorderCardsPersistence = async(updates: ReorderCardRequest[]): Promise<void> => {
   try { 
     // Call the API
-    api.put(`/tasklists/cards/reorder`, updates);
+    await api.put(`/tasklists/cards/reorder`, updates);
   } catch (error) {
     throw new Error("No se pudo persistir el nuevo orden de las tarjetas");
   }
