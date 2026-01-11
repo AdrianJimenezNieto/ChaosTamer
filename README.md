@@ -66,22 +66,3 @@ El cliente sigue el patrón **Container/Presentational** potenciado por Custom H
 * ✅ **Optimistic UI**: La interfaz se actualiza antes de recibir confirmación del servidor para una sensación de latencia cero.
 * ✅ **Seguridad Robusta**: Autenticación Stateless con JWT y protección de endpoints.
 * ✅ **Drag & Drop Accesible**: Implementación suave y accesible mediante `dnd-kit`.
-
----
-
-## 🛠️ Despliegue y Ejecución
-
-### Requisitos
-* Docker & Docker Compose (Recomendado)
-* O bien: Java 17 JDK + Node.js 18+ + PostgreSQL local
-
-### 🐳 Opción A: Docker (¡En 1 minuto!)
-
-La forma más rápida de ver el proyecto funcionando. Levanta Base de Datos, Backend y Frontend orquestados.
-
-```bash
-# 1. Crea el archivo de entorno (o usa los defaults de docker-compose)
-cp .env.example .env
-
-# 2. Levanta los servicios
-docker-compose up --build
