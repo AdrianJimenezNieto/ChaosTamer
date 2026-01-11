@@ -17,15 +17,15 @@ import org.springframework.stereotype.Service;
 import com.chaostamer.domain.model.Board;
 import com.chaostamer.domain.model.TaskList;
 import com.chaostamer.domain.model.User;
-import com.chaostamer.domain.port.in.CreateTaskListUseCase;
-import com.chaostamer.domain.port.in.DeleteTaskListUseCase;
-import com.chaostamer.domain.port.in.ReorderTaskListUseCase;
-import com.chaostamer.domain.port.in.UpdateTaskListUseCase;
+import com.chaostamer.domain.port.in.tasklist.CreateTaskListUseCase;
+import com.chaostamer.domain.port.in.tasklist.DeleteTaskListUseCase;
+import com.chaostamer.domain.port.in.tasklist.ReorderTaskListUseCase;
+import com.chaostamer.domain.port.in.tasklist.UpdateTaskListUseCase;
 import com.chaostamer.domain.port.out.BoardRepositoryPort;
 import com.chaostamer.domain.port.out.TaskListRepositoryPort;
 import com.chaostamer.domain.port.out.UserRepositoryPort;
-import com.chaostamer.infrastructure.adapter.in.web.dto.ReorderTaskListRequest;
-import com.chaostamer.infrastructure.adapter.in.web.dto.UpdateTaskListRequest;
+import com.chaostamer.infrastructure.adapter.in.rest.dto.tasklist.ReorderTaskListRequest;
+import com.chaostamer.infrastructure.adapter.in.rest.dto.tasklist.UpdateTaskListRequest;
 
 @Service
 @RequiredArgsConstructor

@@ -11,16 +11,16 @@ import com.chaostamer.domain.model.Board;
 import com.chaostamer.domain.model.Card;
 import com.chaostamer.domain.model.TaskList;
 import com.chaostamer.domain.model.User;
-import com.chaostamer.domain.port.in.CreateBoardUseCase;
-import com.chaostamer.domain.port.in.DeleteBoardUseCase;
-import com.chaostamer.domain.port.in.GetBoardDetailsUseCase;
-import com.chaostamer.domain.port.in.GetBoardsByOwnerUseCase;
-import com.chaostamer.domain.port.in.UpdateBoardUseCase;
+import com.chaostamer.domain.port.in.board.CreateBoardUseCase;
+import com.chaostamer.domain.port.in.board.DeleteBoardUseCase;
+import com.chaostamer.domain.port.in.board.GetBoardDetailsUseCase;
+import com.chaostamer.domain.port.in.board.GetBoardsByOwnerUseCase;
+import com.chaostamer.domain.port.in.board.UpdateBoardUseCase;
 import com.chaostamer.domain.port.out.BoardRepositoryPort;
 import com.chaostamer.domain.port.out.CardRepositoryPort;
 import com.chaostamer.domain.port.out.TaskListRepositoryPort;
 import com.chaostamer.domain.port.out.UserRepositoryPort;
-import com.chaostamer.infrastructure.adapter.in.web.dto.UpdateBoardRequest;
+import com.chaostamer.infrastructure.adapter.in.rest.dto.board.UpdateBoardRequest;
 
 import java.util.List;
 

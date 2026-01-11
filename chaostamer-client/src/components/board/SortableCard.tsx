@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { Card } from "../../models";
+import type { Card } from "../../types/board.types";
 
 interface Props {
   card: Card;
@@ -40,7 +40,7 @@ export default function SortableCard({ card, onClick }: Props) {
       onClick={onClick}
       className="rounded-md bg-gray-700 p-3 shadow-md text-white text-sm cursor-grab hover:bg-gray-600 active:cursor-grabbing touch-none mb-2"
     >
-      {card.title}{card.id}
+      {card.title}
     </div>
   )
 }

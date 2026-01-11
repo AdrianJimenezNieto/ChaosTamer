@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Board } from '../models';
+import type { Board } from '../types/board.types';
 
 // Define the shape of our state
 interface BoardState {

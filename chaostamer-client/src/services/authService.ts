@@ -1,6 +1,6 @@
 import api from "../lib/axios";
 import { useAuthStore } from "../store/authStore";
-import type { User } from "../models";
+import type { User } from "../types/auth.types";
 
 // Define the shape of the token (matches the backend DTO)
 interface LoginResponse {

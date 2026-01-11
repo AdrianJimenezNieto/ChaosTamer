@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware'; // to save in localStorage
 import { getMe } from '../services/authService';
-import type { User } from '../models';
+import type { User } from '../types/auth.types';
 
 // Define the "shape" of our state
 interface AuthState {
