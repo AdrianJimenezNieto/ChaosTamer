@@ -25,3 +25,6 @@ replay_pid*
 
 # variables for running local
 */src/main/resources/application-dev.properties
+
+# agent
+.agent

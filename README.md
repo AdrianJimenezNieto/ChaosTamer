@@ -1,45 +1,87 @@
-# 🌌 ChaosTamer - Kanban Management System
+# 🌪️ ChaosTamer
 
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.7-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
-[![Architecture](https://img.shields.io/badge/Architecture-Hexagonal-blue)](#-arquitectura)
+![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=java&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
-**ChaosTamer** es una plataforma robusta de gestión de proyectos inspirada en metodologías Agile. A diferencia de clones convencionales, este proyecto ha sido diseñado siguiendo principios de **Arquitectura Hexagonal (Puertos y Adaptadores)** y **Clean Code**, garantizando una separación total entre la lógica de negocio y la infraestructura.
+**ChaosTamer** es una solución de gestión de tareas Kanban de nivel empresarial. Diseñada bajo principios de arquitectura limpia, ofrece una experiencia de usuario fluida con sincronización en tiempo real y persistencia robusta.
 
-> **Status:** El backend está completamente migrado a una estructura de dominio desacoplada, ofreciendo una API REST segura y escalable.
-
----
-
-## 🏗️ Arquitectura
-
-El núcleo de ChaosTamer reside en su organización. Se ha implementado **Arquitectura Hexagonal** para asegurar que el dominio sea independiente de frameworks y herramientas externas:
-
-
-
-* **Domain:** Contiene los modelos de negocio (`Board`, `Card`, `TaskList`) y los puertos (interfaces) que definen las reglas de la aplicación.
-* **Infrastructure:** Adaptadores de entrada (Web/REST Controllers) y salida (Persistencia con JPA/PostgreSQL).
-* **Application:** Casos de uso específicos que orquestan el flujo de datos entre los puertos.
-
-## 🛠️ Stack Tecnológico
-
-### Backend (Java / Spring Boot)
-* **Spring Security & JWT:** Autenticación stateless y protección de recursos por propietario.
-* **Spring Data JPA:** Gestión de persistencia con **PostgreSQL**.
-* **Lombok & MapStruct:** Reducción de código repetitivo y mapeo eficiente entre Entidades y DTOs.
-* **Arquitectura Hexagonal:** Desacoplamiento total de la lógica de negocio.
-
-### Frontend (React / TypeScript)
-* **DND-kit:** Implementación de Drag & Drop complejo para reordenamiento de tarjetas y listas.
-* **Zustand:** Gestión de estado global ligera y eficiente.
-* **Tailwind CSS:** Diseño moderno, oscuro y responsivo.
-* **Optimistic Updates:** Interfaz ultra-rápida que actualiza el estado local antes de confirmar con el servidor.
+<video src="https://github.com/usuario/repo/raw/main/docs/demo.webm" 
+  width="100%" 
+  autoplay 
+  loop 
+  muted 
+  playsinline>
+</video>
 
 ---
 
-## 🔥 Funcionalidades Clave
+## 🚀 Stack Tecnológico
 
-* **Gestión de Tableros:** Creación, edición y eliminación de espacios de trabajo personalizados.
-* **Sistema de Listas Dinámicas:** Organización de tareas mediante columnas con soporte para reordenamiento horizontal.
-* **Tarjetas Interactivas:** Drag & Drop vertical y entre columnas con persistencia de orden en base de datos.
-* **Seguridad por Dueño:** Un usuario solo puede ver, editar o eliminar los tableros de los que es propietario, validado a nivel de servicio.
-* **Edición Inline:** Modificación rápida de títulos de tareas y tableros mediante clics directos.
+### Backend (`chaostamer-api`)
+Núcleo robusto diseñado para la escalabilidad y el desacoplamiento.
+- **Framework**: Spring Boot 3.x
+- **Arquitectura**: Hexagonal (Ports & Adapters)
+- **Base de Datos**: PostgreSQL 15 (Dockerizada)
+- **Seguridad**: Spring Security + JWT + Filtros personalizados
+- **Tiempo Real**: WebSocket (STOMP protocol)
+- **Testing**: JUnit 5 & Mockito
+
+### Frontend (`chaostamer-client`)
+SPA moderna optimizada para rendimiento y mantenibilidad.
+- **Core**: React 19 + TypeScript + Vite
+- **Estilos**: TailwindCSS 3.4
+- **Drag & Drop**: `@dnd-kit/core` & `@dnd-kit/sortable`
+- **Gestión de Estado**: Zustand (con persistencia local)
+- **Comunicación**: Axios (REST) + `@stomp/stompjs` (WebSockets)
+
+---
+
+## 🏗️ Arquitectura y Decisiones Técnicas
+
+Este proyecto no es solo un CRUD; es una demostración de patrones de diseño avanzados.
+
+### Backend: Arquitectura Hexagonal
+Hemos huido de la arquitectura tradicional de capas para implementar **Puertos y Adaptadores**.
+* **Dominio Puro**: El núcleo (`domain/model`) no tiene dependencias de frameworks (ni siquiera Spring annotations), garantizando que la lógica de negocio sea agnóstica a la infraestructura.
+* **Puertos (Ports)**: Interfaces que definen los casos de uso (`port.in`) y las necesidades de salida (`port.out`).
+* **Adaptadores (Adapters)**: Implementaciones concretas.
+    * *Input*: REST Controllers y WebSocket Controllers separados por paquetes.
+    * *Output*: Persistencia JPA y Seguridad desacoplados del dominio.
+
+### Frontend: Separation of Concerns (SoC)
+El cliente sigue el patrón **Container/Presentational** potenciado por Custom Hooks.
+* **Custom Hooks**: Toda la lógica de negocio, llamadas a API y gestión de WebSockets reside en hooks como `useBoardLogic` y `useBoardWebSocket`.
+* **Componentes "Tontos" (Dumb Components)**: Componentes como `BoardHeader` o `CreateListForm` son puramente visuales y reciben datos/acciones vía props, facilitando su testeo y reutilización.
+* **Tipado Centralizado**: Definiciones de TypeScript segregadas por dominio (`types/board.types.ts`, `types/api.types.ts`) para evitar acoplamiento.
+
+---
+
+## ✨ Características Clave
+
+* ✅ **Gestión Kanban Completa**: Crear, editar, eliminar y reordenar tableros, listas y tarjetas.
+* ✅ **Sincronización Real-Time**: Los movimientos de otros usuarios se reflejan instantáneamente en tu pantalla sin recargar (WebSockets).
+* ✅ **Optimistic UI**: La interfaz se actualiza antes de recibir confirmación del servidor para una sensación de latencia cero.
+* ✅ **Seguridad Robusta**: Autenticación Stateless con JWT y protección de endpoints.
+* ✅ **Drag & Drop Accesible**: Implementación suave y accesible mediante `dnd-kit`.
+
+---
+
+## 🛠️ Despliegue y Ejecución
+
+### Requisitos
+* Docker & Docker Compose (Recomendado)
+* O bien: Java 17 JDK + Node.js 18+ + PostgreSQL local
+
+### 🐳 Opción A: Docker (¡En 1 minuto!)
+
+La forma más rápida de ver el proyecto funcionando. Levanta Base de Datos, Backend y Frontend orquestados.
+
+```bash
+# 1. Crea el archivo de entorno (o usa los defaults de docker-compose)
+cp .env.example .env
+
+# 2. Levanta los servicios
+docker-compose up --build

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
-import { useAuthStore } from "../store/authStore";
-import type { WsEvent, CardMovePayload } from "../types/api.types";
+import { useAuthStore } from "../../store/authStore";
+import type { WsEvent, CardMovePayload } from "../../types/api.types";
 
 export const useBoardWebSocket = (
   boardId: string | undefined,

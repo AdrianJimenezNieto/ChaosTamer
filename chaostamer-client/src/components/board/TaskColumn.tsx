@@ -157,7 +157,7 @@ export default function TaskColumn({
                 title="Haz click para editar el nombre de la lista"
                 className='text-xl px-3 py-2 text-white cursor-pointer rounded truncate border border-transparent'
               >
-                {list.title} {list.id}
+                {list.title}
               </h3>
             )
           }
