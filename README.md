@@ -8,12 +8,9 @@
 
 **ChaosTamer** es una solución de gestión de tareas Kanban de nivel empresarial. Diseñada bajo principios de arquitectura limpia, ofrece una experiencia de usuario fluida con sincronización en tiempo real y persistencia robusta.
 
-<video src="https://github.com/AdrianJimenezNieto/ChaosTamer/raw/develop/assets/demo-chaostamer.webm" 
-  width="100%" 
-  autoplay 
-  loop 
-  muted 
-  playsinline>
+<video width="100%" autoplay loop muted playsinline>
+  <source src="https://raw.githubusercontent.com/AdrianJimenezNieto/ChaosTamer/develop/assets/demo-chaostamer.webm" type="video/webm">
+  Tu navegador no soporta videos embebidos. Puedes ver la demo aquí: https://github.com/AdrianJimenezNieto/ChaosTamer/blob/develop/assets/demo-chaostamer.webm
 </video>
 
 ---
