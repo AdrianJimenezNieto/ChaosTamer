@@ -75,10 +75,17 @@ jobs:
     # 9. Conectarse por SSH y reiniciar los contenedores
     - name: Deploy to Oracle Cloud
       uses: appleboy/ssh-action@v1.0.3
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        FRONTEND_URL: "https://chaostamer.duckdns.org"
       with:
         host: ${{ secrets.VM_HOST }}
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
+        envs: DOCKER_USERNAME,JWT_SECRET,DB_USER,DB_PASSWORD,FRONTEND_URL
         script: |
           export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
           export JWT_SECRET=${{ secrets.JWT_SECRET }}

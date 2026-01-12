@@ -11,6 +11,11 @@ services:
       - postgres_data:/var/lib/postgresql/postres_data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d chaostamer_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # ---- BACKEND -----
   backend:
@@ -26,7 +31,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - FRONTEND_URL=${FRONTEND_URL}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   # --- FRONTEND ---
   frontend:
