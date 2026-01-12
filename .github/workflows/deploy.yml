@@ -80,6 +80,7 @@ jobs:
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
         script: |
+          export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
           cd ~/chaostamer
           docker compose pull
           docker compose up -d

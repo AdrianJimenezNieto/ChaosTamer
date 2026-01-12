@@ -2,8 +2,7 @@ import axios from "axios";
 import { useAuthStore } from "../store/authStore";
 
 // Vite env variable
-// const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
-const apiBaseUrl = 'http://localhost:8080/api/v1';
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
 // Create the axios instance
 export const api = axios.create({
