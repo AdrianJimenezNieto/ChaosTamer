@@ -3,6 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ "main" ] # Se activa solo cuando haces push a main
+  workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña Actions
 
 jobs:
   build-and-deploy:
