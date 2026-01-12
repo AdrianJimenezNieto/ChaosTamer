@@ -28,7 +28,7 @@ jobs:
     # Esto sustituye a tu .env.local manual
     - name: Create Frontend Env File
       run: |
-        echo "VITE_API_URL=https://chaostamer.duckdns.org/api/v1" > ./chaostamer-client/.env
+        echo "VITE_API_BASE_URL=https://chaostamer.duckdns.org/api/v1" > ./chaostamer-client/.env
 
     # 4. Preparar Docker para construir imágenes multi-arquitectura (ARM para Oracle)
     - name: Set up QEMU
