@@ -81,6 +81,10 @@ jobs:
         key: ${{ secrets.VM_SSH_KEY }}
         script: |
           export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+          export JWT_SECRET=${{ secrets.JWT_SECRET }}
+          export DB_USER=${{ secrets.DB_USER }}
+          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          export FRONTEND_URL=https://chaostamer.duckdns.org
           cd ~/chaostamer
           docker compose pull
           docker compose up -d

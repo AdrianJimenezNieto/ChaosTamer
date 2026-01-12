@@ -1,40 +1,42 @@
 services:
   # --- DATABASE ---
-    db: 
-      image: postgres:15-alpine
-      container_name: chaostamer-db
-      environment:
-        POSTGRES_USER: tu_usuario
-        POSTGRES_PASSWORD: tu_password
-        POSTGRES_DB: chaostmaer_db
-      volumes:
-        - postgres_data:/var/lib/postgresql/postres_data
-      ports:
-        - "5432:5432"
+  db:
+    image: postgres:15-alpine
+    container_name: chaostamer-db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: chaostamer_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/postres_data
+    ports:
+      - "5432:5432"
 
   # ---- BACKEND -----
-    backend:
-      image: ${DOCKER_USERNAME:-local}/chaostamer-backend:latest
-      build: ./chaostamer-api
-      container_name: chaostamer-backend
-      ports: 
-        - "8080:8080"
-      environment:
-        - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/chaostamer_db
-        - SPRING_DATASOURCE_USERNAME=tu_usuario
-        - SPRING_DATASOURCE_PASSWORD=tu_password
-      depends_on:
-        - db
+  backend:
+    image: ${DOCKER_USERNAME:-local}/chaostamer-backend:latest
+    build: ./chaostamer-api
+    container_name: chaostamer-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/chaostamer_db
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL}
+    depends_on:
+      - db
 
-    # --- FRONTEND ---
-    frontend:
-      image: ${DOCKER_USERNAME:-local}/chaostamer-frontend:latest
-      build: ./chaostamer-client
-      container_name: chaostamer-frontend
-      ports:
-        - "5173:5173"
-      depends_on:
-        - backend
-    
+  # --- FRONTEND ---
+  frontend:
+    image: ${DOCKER_USERNAME:-local}/chaostamer-frontend:latest
+    build: ./chaostamer-client
+    container_name: chaostamer-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
