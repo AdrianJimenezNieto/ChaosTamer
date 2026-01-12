@@ -38,7 +38,7 @@ export const Navbar = () => {
                     <div className="flex items-center">
                         <Link to="/dashboard" className="flex-shrink-0">
                             <span className="text-white text-xl font-bold tracking-wider">
-                                TaskFlow
+                                ChaosTamer
                             </span>
                         </Link>
                     </div>

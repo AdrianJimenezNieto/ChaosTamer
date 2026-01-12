@@ -14,6 +14,7 @@ services:
 
   # ---- BACKEND -----
     backend:
+      image: ${DOCKER_USERNAME:-local}/chaostamer-backend:latest
       build: ./chaostamer-api
       container_name: chaostamer-backend
       ports: 
@@ -27,6 +28,7 @@ services:
 
     # --- FRONTEND ---
     frontend:
+      image: ${DOCKER_USERNAME:-local}/chaostamer-frontend:latest
       build: ./chaostamer-client
       container_name: chaostamer-frontend
       ports:
